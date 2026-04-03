@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Group, Membership
+from .models import Group
+
 
 class GroupSerializer(serializers.ModelSerializer):
     members = serializers.SerializerMethodField()
@@ -10,11 +11,8 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ['id', 'name', 'description', 'created_by', 'admin', 'members']
 
-    def get_memberships(self, obj):
-        return obj.membership_set.all()
-
     def get_members(self, obj):
-        memberships = self.get_memberships(obj)
+        memberships = obj.memberships.all()
 
         return [
             {
@@ -25,10 +23,6 @@ class GroupSerializer(serializers.ModelSerializer):
         ]
 
     def get_admin(self, obj):
-        memberships = self.get_memberships(obj)
+        admin = obj.memberships.filter(role='admin').select_related('user').first()
 
-        for m in memberships:
-            if m.role == 'admin':
-                return m.user.username
-
-        return None
+        return admin.user.username if admin else None

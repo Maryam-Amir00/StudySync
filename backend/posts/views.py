@@ -1,12 +1,16 @@
 from rest_framework import generics, permissions
+from rest_framework.exceptions import PermissionDenied
+
 from .models import Post
 from .serializers import PostSerializer
 from .permissions import IsAuthorOrReadOnly
+from .pagination import PostPagination
 
 
 class PostListCreateView(generics.ListCreateAPIView):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = PostPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -14,16 +18,24 @@ class PostListCreateView(generics.ListCreateAPIView):
 
         queryset = Post.objects.filter(
             group__membership__user=user
-        ).select_related('author', 'group').distinct()
+        ).select_related('author', 'group').prefetch_related('comments').distinct()
 
-        if group_id and group_id.isdigit():
-            queryset = queryset.filter(group_id=group_id)
+        try:
+            if group_id:
+                queryset = queryset.filter(group_id=int(group_id))
+        except (ValueError, TypeError):
+            pass
 
-        return queryset.order_by('-created_at')
+        return queryset
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        group = serializer.validated_data['group']
+        user = self.request.user
 
+        if not group.membership_set.filter(user=user).exists():
+            raise PermissionDenied("You must join the group to post.")
+
+        serializer.save(author=user)
 
 
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -35,4 +47,4 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return Post.objects.filter(
             group__membership__user=user
-        ).select_related('author', 'group').distinct()
+        ).select_related('author', 'group').prefetch_related('comments').distinct()

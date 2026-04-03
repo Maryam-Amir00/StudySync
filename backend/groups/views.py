@@ -6,14 +6,16 @@ from django.db.models import Q
 
 from .models import Group, Membership
 from .serializers import GroupSerializer
+from .pagination import GroupPagination
 
 
 class GroupListCreateView(generics.ListCreateAPIView):
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = GroupPagination
 
     def get_queryset(self):
-        queryset = Group.objects.all().prefetch_related('membership_set__user')
+        queryset = Group.objects.all().prefetch_related('memberships__user')
 
         search = self.request.query_params.get('search', '').strip()
 
@@ -23,7 +25,7 @@ class GroupListCreateView(generics.ListCreateAPIView):
                 Q(description__icontains=search)
             )
 
-        return queryset.order_by('-created_at')
+        return queryset
 
     def perform_create(self, serializer):
         group = serializer.save(created_by=self.request.user)
@@ -38,25 +40,21 @@ class GroupListCreateView(generics.ListCreateAPIView):
 class JoinGroupView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_membership(self, user, group):
-        return Membership.objects.filter(user=user, group=group).first()
-
     def post(self, request, group_id):
         group = get_object_or_404(Group, id=group_id)
+        user = request.user
 
-        membership = self.get_membership(request.user, group)
+        membership, created = Membership.objects.get_or_create(
+            user=user,
+            group=group,
+            defaults={'role': 'member'}
+        )
 
-        if membership:
+        if not created:
             return Response(
                 {"message": "You are already a member"},
                 status=status.HTTP_200_OK
             )
-
-        Membership.objects.create(
-            user=request.user,
-            group=group,
-            role='member'
-        )
 
         return Response(
             {
