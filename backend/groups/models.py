@@ -6,7 +6,13 @@ class Group(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
 
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_groups')
+    created_by = models.ForeignKey(
+    User,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name='created_groups'
+ )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -41,3 +47,14 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.group.name}"
+
+
+
+    def save(self, *args, **kwargs):
+        if self.role == 'admin':
+            Membership.objects.filter(
+                group=self.group,
+                role='admin'
+        ).exclude(id=self.id).update(role='member')
+
+        super().save(*args, **kwargs)

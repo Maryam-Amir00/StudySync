@@ -12,7 +12,7 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'created_by', 'admin', 'members']
 
     def get_members(self, obj):
-        memberships = obj.memberships.all()
+        memberships = obj.memberships.select_related('user')
 
         return [
             {

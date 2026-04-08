@@ -64,3 +64,17 @@ class JoinGroupView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
+
+class LeaveGroupView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, group_id):
+        membership = get_object_or_404(
+            Membership,
+            user=request.user,
+            group_id=group_id
+        )
+
+        membership.delete()
+
+        return Response({"message": "Left group successfully"})
