@@ -30,7 +30,6 @@ class CommentListCreateView(generics.ListCreateAPIView):
         user = self.request.user
         group = post.group
 
-        # ✅ membership validation (FIXED)
         if not group.membership_set.filter(user=user).exists():
             raise PermissionDenied("You must join this group before commenting.")
 

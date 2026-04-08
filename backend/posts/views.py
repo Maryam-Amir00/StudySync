@@ -17,7 +17,7 @@ class PostListCreateView(generics.ListCreateAPIView):
         group_id = self.request.query_params.get('group')
 
         queryset = Post.objects.filter(
-            group__membership__user=user
+            group__memberships__user=user
         ).select_related('author', 'group').prefetch_related('comments').distinct()
 
         try:
@@ -32,7 +32,7 @@ class PostListCreateView(generics.ListCreateAPIView):
         group = serializer.validated_data['group']
         user = self.request.user
 
-        if not group.membership_set.filter(user=user).exists():
+        if not group.memberships.filter(user=user).exists():
             raise PermissionDenied("You must join the group to post.")
 
         serializer.save(author=user)
@@ -46,5 +46,5 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
         user = self.request.user
 
         return Post.objects.filter(
-            group__membership__user=user
+            group__memberships__user=user
         ).select_related('author', 'group').prefetch_related('comments').distinct()

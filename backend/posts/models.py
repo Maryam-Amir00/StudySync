@@ -4,7 +4,7 @@ from groups.models import Group
 
 
 class Post(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=False)
     content = models.TextField()
 
     author = models.ForeignKey(User, on_delete=models.CASCADE)
