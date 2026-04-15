@@ -9,8 +9,6 @@ const axiosInstance = axios.create({
   },
 });
 
-console.log("API URL:", import.meta.env.VITE_API_URL);
-
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
