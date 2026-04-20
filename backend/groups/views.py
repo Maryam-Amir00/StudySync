@@ -1,9 +1,9 @@
 from rest_framework import generics, permissions, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-
 from .models import Group, Membership
 from .serializers import GroupSerializer
 from .pagination import GroupPagination
@@ -78,3 +78,27 @@ class LeaveGroupView(APIView):
         membership.delete()
 
         return Response({"message": "Left group successfully"})
+
+
+
+
+class GroupUpdateView(generics.RetrieveUpdateAPIView):
+    serializer_class = GroupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Group.objects.all()
+
+    def patch(self, request, *args, **kwargs):  
+        return self.partial_update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        group = self.get_object()
+        user = self.request.user
+
+        if not group.memberships.filter(user=user, role='admin').exists():
+            raise PermissionDenied("Only admin can update this group")
+
+        print("DATA RECEIVED:", serializer.validated_data)  # 👈 DEBUG
+
+        serializer.save()

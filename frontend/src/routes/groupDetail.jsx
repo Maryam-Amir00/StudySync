@@ -1,33 +1,40 @@
-import { useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "../api/axios";
+import { useParams } from "@tanstack/react-router";
+import { fetchPosts } from "../api/postApi";
 
 const GroupDetail = () => {
-    const params = useParams({ from: "/groups/$groupId" });
-    const groupId = params.groupId;
+  const params = useParams({ from: "/groups/$groupId" });
+  const groupId = params.groupId;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["posts", groupId],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/posts/?group=${groupId}`);
-      return res.data;
-    },
+    queryFn: () => fetchPosts(groupId),
   });
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading posts...</div>;
+
+  if (error) return <div>Error loading posts</div>;
 
   return (
-    <div>
+    <div style={{ padding: 20 }}>
       <h2>Group Posts</h2>
-
-      {data.results.length === 0 ? (
-        <p>No posts</p>
+      {!data?.results?.length ? (
+        <p>No posts in this group</p>
       ) : (
         data.results.map((post) => (
-          <div key={post.id}>
+          <div
+            key={post.id}
+            style={{
+              border: "1px solid gray",
+              padding: 10,
+              marginBottom: 10,
+            }}
+          >
             <h3>{post.title}</h3>
             <p>{post.content}</p>
-            <p>{post.author}</p>
+
+            <p>👤 {post.author}</p>
+            <p>💬 {post.comment_count} comments</p>
           </div>
         ))
       )}
