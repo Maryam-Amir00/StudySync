@@ -20,7 +20,7 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
         return Comment.objects.filter(
             post_id=post_id,
-            post__group__membership__user=user
+            post__group__memberships__user=user
         ).select_related('author', 'post').distinct()
 
     def perform_create(self, serializer):
@@ -28,15 +28,11 @@ class CommentListCreateView(generics.ListCreateAPIView):
         post = get_object_or_404(Post, id=post_id)
 
         user = self.request.user
-        group = post.group
 
-        if not group.membership_set.filter(user=user).exists():
-            raise PermissionDenied("You must join this group before commenting.")
+        if not post.group.memberships.filter(user=user).exists():
+            raise PermissionDenied("Join group first.")
 
-        serializer.save(
-            author=user,
-            post=post
-        )
+        serializer.save(author=user, post=post)
 
 
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -49,5 +45,5 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return Comment.objects.filter(
             post_id=post_id,
-            post__group__membership__user=user
+            post__group__memberships__user=user
         ).select_related('author', 'post').distinct()
