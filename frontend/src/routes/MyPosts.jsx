@@ -10,35 +10,32 @@ const MyPosts = () => {
     queryFn: fetchPosts,
   });
 
-  // ✅ Loading
-  if (isLoading) return <p>Loading...</p>;
 
-  // ✅ Error
-  if (isError) return <p>Something went wrong...</p>;
+  if (isLoading) return <p className="text-[#6B7280]">Loading...</p>;
 
-  // ✅ User check
-  if (!user) return <p>Loading user...</p>;
+  if (isError) return <p className="text-[#EF4444]">Something went wrong...</p>;
 
-  // ✅ Handle API structure safely
+
+  if (!user) return <p className="text-[#6B7280]">Loading user...</p>;
+
   const postsArray = Array.isArray(data)
     ? data
     : data?.results || [];
 
-  // ✅ Filter only MY posts
   const myPosts = postsArray.filter(
     (post) => post.user === user.id
   );
 
   return (
-    <div>
-      <h2>My Posts</h2>
+    <div className="space-y-5">
+      <h2 className="text-2xl font-bold text-[#111827] tracking-tight">My Posts</h2>
 
       {myPosts.length === 0 ? (
-        <p>No posts yet</p>
+        <p className="text-[#6B7280]">No posts yet</p>
       ) : (
         myPosts.map((post) => (
-          <div key={post.id}>
-            <p>{post.content}</p>
+          <div key={post.id} className="bg-white/90 backdrop-blur-sm border border-[#E5E7EB] rounded-xl shadow-sm p-5">
+            <p className="text-[#374151]">{post.content}</p>
           </div>
         ))
       )}

@@ -22,14 +22,20 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.log("Unauthorized - login again");
-    }
-    return Promise.reject(error);
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access");
+
+  const url = config.url || "";
+
+  if (
+    token &&
+    !url.endsWith("/login/") &&
+    !url.endsWith("/register/")
+  ) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+
+  return config;
+});
 
 export default axiosInstance;

@@ -10,9 +10,9 @@ const MyGroups = () => {
     queryFn: fetchGroups,
   });
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Something went wrong...</p>;
-  if (!user) return <p>Loading user...</p>;
+  if (isLoading) return <p className="text-[#6B7280]">Loading...</p>;
+  if (isError) return <p className="text-[#EF4444]">Something went wrong...</p>;
+  if (!user) return <p className="text-[#6B7280]">Loading user...</p>;
 
   const groupsArray = Array.isArray(data)
     ? data
@@ -33,34 +33,38 @@ const MyGroups = () => {
   );
 
   return (
-    <div>
-      <h2>My Groups</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-[#111827] tracking-tight">My Groups</h2>
 
       {/* 👑 Created */}
-      <h3>Your Groups</h3>
+      <div className="bg-white/90 backdrop-blur-sm border border-[#E5E7EB] rounded-xl shadow-sm p-5">
+      <h3 className="text-lg font-semibold text-[#111827] mb-3">Your Groups</h3>
       {createdGroups.length === 0 ? (
-        <p>No groups created by you</p>
+        <p className="text-[#6B7280]">No groups created by you</p>
       ) : (
         createdGroups.map((group) => (
-          <div key={group.id}>
-            <p>{group.name}</p>
+          <div key={group.id} className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 mb-2 last:mb-0">
+            <p className="text-[#374151] font-medium">{group.name}</p>
           </div>
         ))
       )}
+      </div>
 
-      <hr style={{ margin: "20px 0" }} />
+      <hr className="border-[#E5E7EB]" />
 
       {/* 👥 Joined */}
-      <h3>Joined Groups</h3>
+      <div className="bg-white/90 backdrop-blur-sm border border-[#E5E7EB] rounded-xl shadow-sm p-5">
+      <h3 className="text-lg font-semibold text-[#111827] mb-3">Joined Groups</h3>
       {joinedGroups.length === 0 ? (
-        <p>You have not joined any groups</p>
+        <p className="text-[#6B7280]">You have not joined any groups</p>
       ) : (
         joinedGroups.map((group) => (
-          <div key={group.id}>
-            <p>{group.name}</p>
+          <div key={group.id} className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 mb-2 last:mb-0">
+            <p className="text-[#374151] font-medium">{group.name}</p>
           </div>
         ))
       )}
+      </div>
     </div>
   );
 };

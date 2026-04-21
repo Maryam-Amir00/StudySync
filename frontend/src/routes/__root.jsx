@@ -15,6 +15,7 @@ import GroupDetail from "./groupDetail";
 import MyPosts from "./MyPosts";
 import MyGroups from "./MyGroups";
 import Profile from "./Profile";
+import CreateGroupPage from "./CreateGroupPage";
 
 
 // ROOT
@@ -76,6 +77,12 @@ const myPostsRoute = createRoute({
   component: MyPosts,
 });
 
+const createGroupRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: "/create-group",
+  component: CreateGroupPage,
+});
+
 
 // OTHER ROUTES
 const groupsRoute = createRoute({
@@ -100,6 +107,7 @@ const routeTree = rootRoute.addChildren([
     profileRoute,
     myGroupsRoute,
     myPostsRoute,
+    createGroupRoute,
   ]),
   groupsRoute,
   groupDetailRoute,
