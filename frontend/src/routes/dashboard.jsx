@@ -1,19 +1,24 @@
 import CreateGroup from "../components/CreateGroup";
-import GroupsPage from "./groups";
+import Sidebar from "../components/Sidebar";
+import { Outlet } from "@tanstack/react-router";
 
 const Dashboard = () => {
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ display: "flex" }}>
       
-      <h1>Dashboard</h1>
+      <Sidebar />
 
-      {/* CREATE GROUP */}
-      <CreateGroup />
+      <div style={{ flex: 1, padding: 20 }}>
+        <h1>Dashboard</h1>
 
-      <hr style={{ margin: "20px 0" }} />
+        <CreateGroup />
 
-      {/* ALL GROUPS */}
-      <GroupsPage />
+        <hr style={{ margin: "20px 0" }} />
+
+        {/* ✅ THIS IS THE FIX */}
+        <Outlet />
+
+      </div>
 
     </div>
   );

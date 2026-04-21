@@ -8,22 +8,27 @@ import {
 import Login from "./login";
 import Register from "./register";
 import ProtectedRoute from "../components/ProtectedRoute";
-import Dashboard from "./dashboard";  
+import Dashboard from "./dashboard";
 import GroupsPage from "./groups";
 import GroupDetail from "./groupDetail";
 
+import MyPosts from "./MyPosts";
+import MyGroups from "./MyGroups";
+import Profile from "./Profile";
 
+
+// ROOT
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
 });
 
 
+// AUTH ROUTES
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: Login,
 });
-
 
 const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -32,19 +37,49 @@ const registerRoute = createRoute({
 });
 
 
+// DASHBOARD (LAYOUT)
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
   component: () => (
     <ProtectedRoute>
-      <Dashboard />   
+      <Dashboard />
     </ProtectedRoute>
   ),
 });
 
 
+// ✅ DEFAULT CHILD (VERY IMPORTANT)
+const dashboardIndexRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: "/",   // default inside dashboard
+  component: GroupsPage,
+});
+
+
+// CHILD ROUTES
+const profileRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: "/profile",
+  component: Profile,
+});
+
+const myGroupsRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: "/my-groups",
+  component: MyGroups,
+});
+
+const myPostsRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: "/my-posts",
+  component: MyPosts,
+});
+
+
+// OTHER ROUTES
 const groupsRoute = createRoute({
-  getParentRoute: () => rootRoute,  
+  getParentRoute: () => rootRoute,
   path: "/groups",
   component: GroupsPage,
 });
@@ -56,14 +91,19 @@ const groupDetailRoute = createRoute({
 });
 
 
+// ROUTE TREE
 const routeTree = rootRoute.addChildren([
   loginRoute,
   registerRoute,
-  dashboardRoute,
-  groupsRoute,  
+  dashboardRoute.addChildren([
+    dashboardIndexRoute,   // ✅ THIS FIXES YOUR ISSUE
+    profileRoute,
+    myGroupsRoute,
+    myPostsRoute,
+  ]),
+  groupsRoute,
   groupDetailRoute,
 ]);
-
 
 export const router = createRouter({
   routeTree,

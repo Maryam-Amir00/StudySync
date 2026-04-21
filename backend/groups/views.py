@@ -99,6 +99,6 @@ class GroupUpdateView(generics.RetrieveUpdateAPIView):
         if not group.memberships.filter(user=user, role='admin').exists():
             raise PermissionDenied("Only admin can update this group")
 
-        print("DATA RECEIVED:", serializer.validated_data)  # 👈 DEBUG
+        print("DATA RECEIVED:", serializer.validated_data) 
 
         serializer.save()
