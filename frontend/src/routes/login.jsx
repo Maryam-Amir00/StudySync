@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { loginUser } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/logo.png";
 
 const Login = () => {
   const [form, setForm] = useState({
@@ -38,7 +39,6 @@ const Login = () => {
     mutation.mutate(form);
   };
 
-  // Animation variants (UI only)
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -62,13 +62,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-[#F8FAFF] via-[#EEF2FF] to-[#F9FAFB] flex items-center justify-center px-4 relative overflow-hidden">
 
-      {/* Background Glow */}
-      <div className="absolute w-[400px] h-[400px] bg-[#EEF2FF] rounded-full blur-3xl top-[-100px] left-[-100px]" />
-      <div className="absolute w-[300px] h-[300px] bg-[#EEF2FF] rounded-full blur-3xl bottom-[-80px] right-[-80px]" />
+      <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_15%_20%,#C7D2FE_0,transparent_35%),radial-gradient(circle_at_80%_10%,#A5B4FC_0,transparent_28%),radial-gradient(circle_at_85%_85%,#C4B5FD_0,transparent_32%)]" />
+      <div className="absolute w-[420px] h-[420px] bg-[#C7D2FE]/50 rounded-full blur-3xl top-[-120px] left-[-120px]" />
+      <div className="absolute w-[340px] h-[340px] bg-[#A5B4FC]/40 rounded-full blur-3xl bottom-[-100px] right-[-100px]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[linear-gradient(#4F46E5_1px,transparent_1px),linear-gradient(90deg,#4F46E5_1px,transparent_1px)] bg-size-[42px_42px]" />
 
-      {/* Card */}
       <motion.div
         variants={container}
         initial="hidden"
@@ -76,11 +76,12 @@ const Login = () => {
         className="relative w-full max-w-md bg-white/90 backdrop-blur-sm border border-[#E5E7EB] rounded-2xl shadow-lg p-8"
       >
 
-        {/* Top Accent Line */}
         <div className="absolute top-0 left-0 w-full h-1 bg-[#4F46E5] rounded-t-2xl" />
 
-        {/* Title */}
         <motion.div variants={item} className="mb-8 text-center">
+          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-white/85 border border-[#E5E7EB] shadow-sm flex items-center justify-center">
+            <img src={logo} alt="StudySync logo" className="w-12 h-12 object-contain" />
+          </div>
           <h1 className="text-3xl font-bold text-[#111827] tracking-tight">
             StudySync
           </h1>
@@ -89,10 +90,9 @@ const Login = () => {
           </p>
         </motion.div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* Username */}
+
           <motion.div variants={item}>
             <label className="text-sm font-medium text-[#374151] block mb-1">
               Username
@@ -111,7 +111,6 @@ const Login = () => {
             />
           </motion.div>
 
-          {/* Password */}
           <motion.div variants={item}>
             <label className="text-sm font-medium text-[#374151] block mb-1">
               Password
@@ -130,7 +129,6 @@ const Login = () => {
             />
           </motion.div>
 
-          {/* Button */}
           <motion.button
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -153,7 +151,6 @@ const Login = () => {
             {mutation.isPending ? "Signing in..." : "Sign In"}
           </motion.button>
 
-          {/* Message */}
           <AnimatePresence mode="wait">
             {message && (
               <motion.p
@@ -173,7 +170,6 @@ const Login = () => {
           </AnimatePresence>
         </form>
 
-        {/* Footer */}
         <div className="relative mt-6 h-6">
 
           <motion.p
