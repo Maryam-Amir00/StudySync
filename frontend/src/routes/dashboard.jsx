@@ -1,13 +1,8 @@
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "@tanstack/react-router";
-<<<<<<< HEAD
 import { useAuth } from "../context/useAuth";
 import { motion as _motion } from "framer-motion";
-=======
-import { useAuth } from "../context/AuthContext";
-import { motion } from "framer-motion";
 import { SearchProvider, useSearch } from "../context/SearchContext";
->>>>>>> 92674d26098eb58daedabca22370a931235caefc
 
 const DashboardContent = () => {
   const { user } = useAuth();

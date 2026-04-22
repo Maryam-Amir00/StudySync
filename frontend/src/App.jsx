@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-import React from 'react'
-
->>>>>>> 92674d26098eb58daedabca22370a931235caefc
 function App() {
 
   return (

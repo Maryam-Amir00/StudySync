@@ -566,13 +566,13 @@ const GroupDetail = () => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={closeCommentEditor}
-                  className="fixed inset-0 z-[9998] bg-black/30 backdrop-blur-[2px]"
+                  className="fixed inset-0 z-9998 bg-black/30 backdrop-blur-[2px]"
                 />
                 <_motion.div
                   initial={{ opacity: 0, y: 12, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                  className="fixed left-1/2 top-1/2 z-[9999] w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-2xl"
+                  className="fixed left-1/2 top-1/2 z-9999 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-2xl"
                 >
                   <div className="mb-3">
                     <h3 className="text-base font-bold text-[#111827]">Edit Comment</h3>

@@ -2,13 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/useAuth";
 import { fetchPosts } from "../api/postApi";
 import { useNavigate } from "@tanstack/react-router";
-<<<<<<< HEAD
 import { motion as _motion } from "framer-motion";
-=======
-import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useSearch } from "../context/SearchContext";
->>>>>>> 92674d26098eb58daedabca22370a931235caefc
 
 const MyPosts = () => {
   const { user } = useAuth();
