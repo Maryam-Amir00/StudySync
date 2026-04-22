@@ -1,9 +1,11 @@
 import axiosInstance from "./axios";
 
-export const fetchPosts = async (groupId) => {
-  const response = await axiosInstance.get("/posts/", {
-    params: { group: groupId },
-  });
+export const fetchPosts = async (groupId, search = "") => {
+  const params = {};
+  if (groupId) params.group = groupId;
+  if (search) params.search = search;
+
+  const response = await axiosInstance.get("/posts/", { params });
   return response.data;
 };
 

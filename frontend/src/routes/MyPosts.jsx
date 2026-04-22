@@ -3,14 +3,29 @@ import { useAuth } from "../context/AuthContext";
 import { fetchPosts } from "../api/postApi";
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useSearch } from "../context/SearchContext";
 
 const MyPosts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  const searchContext = useSearch();
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const searchQuery = searchContext?.searchQuery ?? "";
+
+  // 🔹 DEBOUNCE SEARCH
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["posts"],
-    queryFn: () => fetchPosts(), // Fetch all posts
+    queryKey: ["posts", debouncedSearch],
+    queryFn: () => fetchPosts(undefined, debouncedSearch), // Fetch all posts with search
   });
 
   if (isLoading) return (
