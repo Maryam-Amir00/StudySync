@@ -4,6 +4,7 @@ import {
   createRouter,
   Outlet,
 } from "@tanstack/react-router";
+import { Toaster } from "react-hot-toast";
 
 import Login from "./login";
 import Register from "./register";
@@ -20,7 +21,12 @@ import CreateGroupPage from "./CreateGroupPage";
 
 // ROOT
 const rootRoute = createRootRoute({
-  component: () => <Outlet />,
+  component: () => (
+    <>
+      <Outlet />
+      <Toaster position="top-right" reverseOrder={false} />
+    </>
+  ),
 });
 
 

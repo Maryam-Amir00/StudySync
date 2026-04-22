@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     fetchGroups,
     joinGroup,
@@ -23,164 +25,243 @@ const GroupsPage = () => {
     // 🔹 JOIN
     const joinMutation = useMutation({
         mutationFn: joinGroup,
-        onSuccess: () => queryClient.invalidateQueries(["groups"]),
+        onSuccess: () => {
+            toast.success("Joined group successfully");
+            queryClient.invalidateQueries(["groups"]);
+        },
     });
 
     // 🔹 LEAVE
     const leaveMutation = useMutation({
         mutationFn: leaveGroup,
-        onSuccess: () => queryClient.invalidateQueries(["groups"]),
+        onSuccess: () => {
+            toast.success("Left group");
+            queryClient.invalidateQueries(["groups"]);
+        },
     });
 
-    // 🔹 UPDATE (ONLY HERE ✅)
+    // 🔹 UPDATE
     const updateMutation = useMutation({
         mutationFn: updateGroup,
         onSuccess: () => {
-            alert("Group updated ✅");
+            toast.success("Group updated");
             queryClient.invalidateQueries(["groups"]);
         },
         onError: (err) => {
             console.log("UPDATE ERROR:", err.response?.data || err);
+            toast.error("Error updating group");
         },
     });
 
-    // 🔹 EDIT HANDLER (NO HOOKS HERE ✅)
+    // 🔹 EDIT HANDLER
     const handleEdit = (group) => {
-        const newName = prompt("Enter new group name", group.name);
-        const newDesc = prompt("Enter new description", group.description);
+        toast((t) => (
+            <div className="flex flex-col gap-4 p-1 min-w-[280px]">
+                <div className="flex flex-col gap-1">
+                  <p className="font-bold text-base text-[#111827]">Edit Group</p>
+                  <p className="text-xs text-[#6B7280]">Update community details for everyone.</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#4F46E5]">Group Name</label>
+                    <input
+                        id={`edit-name-${group.id}`}
+                        placeholder="e.g. Advanced Calculus"
+                        defaultValue={group.name}
+                        className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm focus:border-[#4F46E5] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#EEF2FF] transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#4F46E5]">Description</label>
+                    <textarea
+                        id={`edit-desc-${group.id}`}
+                        placeholder="What is this group about?"
+                        defaultValue={group.description}
+                        rows={3}
+                        className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm focus:border-[#4F46E5] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#EEF2FF] transition-all"
+                    />
+                  </div>
+                </div>
 
-        if (!newName || !newDesc) return;
-
-        updateMutation.mutate({
-            id: group.id,
-            data: {
-                name: newName,
-                description: newDesc,
-            },
-        });
+                <div className="flex justify-end gap-2 pt-2">
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="rounded-xl px-4 py-2 text-xs font-bold text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#111827]"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            const newName = document.getElementById(`edit-name-${group.id}`).value;
+                            const newDesc = document.getElementById(`edit-desc-${group.id}`).value;
+                            if (newName && newDesc) {
+                                updateMutation.mutate({
+                                    id: group.id,
+                                    data: { name: newName, description: newDesc },
+                                });
+                                toast.dismiss(t.id);
+                            }
+                        }}
+                        className="rounded-xl bg-[#4F46E5] px-5 py-2 text-xs font-bold text-white shadow-md shadow-[#4F46E5]/20 transition-all hover:bg-[#4338CA] hover:shadow-lg active:scale-95"
+                    >
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        ), { duration: 8000 });
     };
 
     // 🔹 STATES
-    if (isLoading) return <div className="text-[#6B7280]">Loading groups...</div>;
-    if (error) return <div className="text-[#EF4444]">Error loading groups</div>;
-    if (!user) return <div className="text-[#6B7280]">Loading user...</div>;
+    if (isLoading) return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#EEF2FF] border-t-[#4F46E5]" />
+        <p className="text-sm font-bold text-[#6B7280] animate-pulse">Syncing communities...</p>
+      </div>
+    );
 
-    // 🔹 USERNAME
-    const rawUsername =
-        user?.username ||
-        user?.user?.username ||
-        user?.data?.username ||
-        "";
+    if (error) return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#FEE2E2] bg-[#FEF2F2]/50 p-12 text-center">
+        <div className="mb-4 rounded-full bg-[#EF4444] p-3 text-white">
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-bold text-[#991B1B]">Data Sync Failed</h3>
+        <p className="mt-2 text-sm text-[#EF4444]">We couldn't load the groups. Please check your connection.</p>
+      </div>
+    );
 
+    const rawUsername = user?.username || "";
     const currentUsername = rawUsername.toLowerCase().trim();
 
+    const container = {
+      hidden: { opacity: 0 },
+      show: {
+        opacity: 1,
+        transition: {
+          staggerChildren: 0.1
+        }
+      }
+    };
+
+    const item = {
+      hidden: { opacity: 0, y: 20 },
+      show: { opacity: 1, y: 0 }
+    };
+
     return (
-        <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-2xl font-bold tracking-tight text-[#111827]">All Groups</h1>
-                <span className="rounded-full border border-[#DDD6FE] bg-[#F5F3FF] px-3 py-1 text-xs font-semibold text-[#8B5CF6]">
-                    Discover communities
-                </span>
+        <div className="space-y-8">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+                <div className="space-y-0.5">
+                  <h1 className="text-2xl font-bold tracking-tight text-gray-900">Communities</h1>
+                  <p className="text-sm font-medium text-gray-500">Discover and join study groups that match your interests.</p>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-1.5 shadow-sm">
+                    <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
+                        {data?.results?.length || 0} Groups
+                    </span>
+                </div>
             </div>
 
-            {data?.results?.length === 0 && <p className="text-[#6B7280]">No groups found</p>}
+            {data?.results?.length === 0 && (
+               <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                 <h3 className="text-lg font-bold text-gray-900">No communities found</h3>
+                 <p className="mt-1 text-sm text-gray-500">Be the first to start a conversation!</p>
+               </div>
+            )}
 
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <motion.div 
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            >
             {data?.results?.map((group) => {
                 if (!group) return null;
 
-                const members = Array.isArray(group.members)
-                    ? group.members
-                    : [];
-
-                const isMember = members.some(
-                    (m) =>
-                        (m?.username || "").toLowerCase().trim() === currentUsername
-                );
-
-                const isAdmin =
-                    (group?.admin || "").toLowerCase().trim() === currentUsername;
+                const members = Array.isArray(group.members) ? group.members : [];
+                const isMember = members.some((m) => (m?.username || "").toLowerCase().trim() === currentUsername);
+                const isAdmin = (group?.admin || "").toLowerCase().trim() === currentUsername;
 
                 return (
-                    <article
+                    <motion.article
                         key={group.id}
-                        onClick={() =>
-                            navigate({
-                                to: "/groups/$groupId",
-                                params: { groupId: group.id },
-                            })
-                        }
-                        className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-[#FFFFFF] p-5 shadow-[0_10px_28px_rgba(17,24,39,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(79,70,229,0.16)]"
+                        variants={item}
+                        onClick={() => navigate({ to: "/groups/$groupId", params: { groupId: group.id } })}
+                        className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white p-6 transition-all duration-200 hover:border-indigo-100 hover:shadow-md cursor-pointer"
                     >
-                        <div className="absolute inset-x-0 top-0 h-1.5 bg-linear-to-r from-[#EEF2FF] via-[#4F46E5] to-[#8B5CF6] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
-                        <div className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-[#EEF2FF] blur-2xl transition-all duration-300 group-hover:bg-[#DDD6FE]" />
+                        <div className="mb-4 flex justify-between items-start">
+                          <div className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${isMember ? 'bg-emerald-50 text-emerald-700' : 'bg-indigo-50 text-indigo-700'}`}>
+                            {isMember ? 'Joined' : 'Community'}
+                          </div>
+                        </div>
 
-                        <h3
-                            className="cursor-pointer text-[#111827] font-semibold text-lg transition-colors duration-300 group-hover:text-[#4F46E5]"
-                            onClick={() =>
-                                navigate({
-                                    to: "/groups/$groupId",
-                                    params: { groupId: group.id },
-                                })
-                            }
-                        >
+                        <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-indigo-600">
                             {group.name}
                         </h3>
 
-                        <p className="mt-2 text-sm text-[#374151] line-clamp-3">
+                        <p className="mt-2 text-sm leading-relaxed text-gray-500 line-clamp-2 flex-1">
                             {group.description || "No description provided."}
                         </p>
 
-                        <div className="mt-4 space-y-1.5 text-xs text-[#6B7280]">
-                            <p className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-[#10B981]" />
-                                Creator: {group.admin || "N/A"}
-                            </p>
-                            <p>Created: {group.created_at ? new Date(group.created_at).toLocaleDateString() : "N/A"}</p>
-                            <p>Members: {members.length}</p>
+                        <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-gray-50 pt-4">
+                            <div className="flex items-center gap-1 text-[11px] font-medium text-gray-400">
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                {members.length}
+                            </div>
+                            <div className="flex items-center gap-1 text-[11px] font-medium text-gray-400">
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {group.created_at ? new Date(group.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : "N/A"}
+                            </div>
                         </div>
 
-                        {!isMember && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    joinMutation.mutate(group.id);
-                                }}
-                                className="mt-5 rounded-xl bg-[#4F46E5] px-4 py-2 font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#4338CA]"
-                            >
-                                Join
-                            </button>
-                        )}
+                        <div className="mt-6">
+                          {!isMember ? (
+                              <button
+                                  onClick={(e) => {
+                                      e.stopPropagation();
+                                      joinMutation.mutate(group.id);
+                                  }}
+                                  className="w-full rounded-lg bg-indigo-600 py-2 text-xs font-bold text-white transition-all hover:bg-indigo-700 active:scale-95"
+                              >
+                                Join Group
+                              </button>
+                          ) : (
+                              <div className="flex w-full gap-2">
+                                  <button
+                                      onClick={(e) => {
+                                          e.stopPropagation();
+                                          leaveMutation.mutate(group.id);
+                                      }}
+                                      className="flex-1 rounded-lg border border-red-100 bg-red-50 py-2 text-[10px] font-bold text-red-600 transition-all hover:bg-red-100 active:scale-95"
+                                  >
+                                      Leave
+                                  </button>
 
-                        {isMember && (
-                            <div className="flex flex-wrap gap-3">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        leaveMutation.mutate(group.id);
-                                    }}
-                                    className="mt-5 rounded-xl bg-[#EF4444] px-4 py-2 font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#DC2626]"
-                                >
-                                    Leave
-                                </button>
-
-                                {isAdmin && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEdit(group);
-                                        }}
-                                        className="mt-5 rounded-xl bg-[#4F46E5] px-4 py-2 font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#4338CA]"
-                                    >
-                                        Edit
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </article>
+                                  {isAdmin && (
+                                      <button
+                                          onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleEdit(group);
+                                          }}
+                                          className="flex-1 rounded-lg bg-gray-900 py-2 text-[10px] font-bold text-white transition-all hover:bg-gray-800 active:scale-95"
+                                      >
+                                          Settings
+                                      </button>
+                                  )}
+                              </div>
+                          )}
+                        </div>
+                    </motion.article>
                 );
             })}
-            </div>
+            </motion.div>
         </div>
     );
 };

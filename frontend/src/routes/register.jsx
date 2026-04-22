@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 import { registerUser } from "../api/authApi";
 import logo from "../assets/logo.png";
@@ -13,29 +14,33 @@ const Register = () => {
     password: "",
   });
 
-  const [message, setMessage] = useState("");
-
   const navigate = useNavigate();
 
   const mutation = useMutation({
     mutationFn: registerUser,
 
     onSuccess: () => {
-      setMessage("Account created successfully!");
+      toast.success("Account created successfully!");
 
       setTimeout(() => {
         navigate({ to: "/" });
       }, 1000);
     },
 
-    onError: () => {
-      setMessage("Registration failed. Try a different username.");
+    onError: (error) => {
+      let message = "Registration failed";
+      if (typeof error === 'string') {
+        message = error;
+      } else if (error && typeof error === 'object') {
+        const firstError = Object.values(error)[0];
+        message = Array.isArray(firstError) ? firstError[0] : (error.detail || message);
+      }
+      toast.error(message);
     },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setMessage("");
     mutation.mutate(form);
   };
 
@@ -65,8 +70,8 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-[#F8FAFF] via-[#EEF2FF] to-[#F9FAFB] flex items-center justify-center px-4 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_15%_20%,#C7D2FE_0,transparent_35%),radial-gradient(circle_at_80%_10%,#A5B4FC_0,transparent_28%),radial-gradient(circle_at_85%_85%,#C4B5FD_0,transparent_32%)]" />
-      <div className="absolute w-[420px] h-[420px] bg-[#C7D2FE]/50 rounded-full blur-3xl top-[-120px] left-[-120px]" />
-      <div className="absolute w-[340px] h-[340px] bg-[#A5B4FC]/40 rounded-full blur-3xl bottom-[-100px] right-[-100px]" />
+      <div className="absolute w-105 h-105 bg-[#C7D2FE]/50 rounded-full blur-3xl -top-30 -left-30" />
+      <div className="absolute w-85 h-85 bg-[#A5B4FC]/40 rounded-full blur-3xl -bottom-25 -right-25" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[linear-gradient(#4F46E5_1px,transparent_1px),linear-gradient(90deg,#4F46E5_1px,transparent_1px)] bg-size-[42px_42px]" />
 
       <motion.div
@@ -164,19 +169,6 @@ const Register = () => {
           >
             {mutation.isPending ? "Creating account..." : "Register"}
           </motion.button>
-
-          {message && (
-            <motion.p
-              variants={item}
-              className={`text-sm text-center mt-2 ${
-                message.includes("success")
-                  ? "text-[#10B981]"
-                  : "text-[#EF4444]"
-              }`}
-            >
-              {message}
-            </motion.p>
-          )}
         </form>
 
         <div className="relative mt-6 h-6">

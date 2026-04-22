@@ -12,6 +12,11 @@ export const fetchGroups = async (search = "") => {
   };
 
 
+export const fetchGroup = async (id) => {
+    const response = await axiosInstance.get(`/groups/${id}/`);
+    return response.data;
+};
+
 export const createGroup = async (data) => {
   const response = await axiosInstance.post("/groups/", data);
   return response.data;
