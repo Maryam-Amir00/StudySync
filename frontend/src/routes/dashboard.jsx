@@ -1,10 +1,17 @@
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "@tanstack/react-router";
+<<<<<<< HEAD
 import { useAuth } from "../context/useAuth";
 import { motion as _motion } from "framer-motion";
+=======
+import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion";
+import { SearchProvider, useSearch } from "../context/SearchContext";
+>>>>>>> 92674d26098eb58daedabca22370a931235caefc
 
-const Dashboard = () => {
+const DashboardContent = () => {
   const { user } = useAuth();
+  const { searchQuery, setSearchQuery } = useSearch();
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-[#F9FAFB]">
@@ -27,6 +34,27 @@ const Dashboard = () => {
                 <p className="text-xs font-medium text-gray-500">
                   Welcome back, <span className="text-indigo-600">@{user?.username || 'scholar'}</span>
                 </p>
+              </div>
+
+              {/* 🔍 Global Search Bar */}
+              <div className="flex-1 max-w-md hidden md:block">
+                <div className="relative group">
+                  <input
+                    type="text"
+                    placeholder="Search your workspace..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-2 pl-10 text-sm transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50"
+                  />
+                  <svg 
+                    className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 transition-colors group-focus-within:text-indigo-500" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
               </div>
 
               <div className="flex items-center gap-4">
@@ -57,6 +85,14 @@ const Dashboard = () => {
         </_motion.div>
       </main>
     </div>
+  );
+};
+
+const Dashboard = () => {
+  return (
+    <SearchProvider>
+      <DashboardContent />
+    </SearchProvider>
   );
 };
 

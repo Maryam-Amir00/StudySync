@@ -1,26 +1,54 @@
+<<<<<<< HEAD
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "react-hot-toast";
 import { motion as _motion, AnimatePresence } from "framer-motion";
+=======
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
+>>>>>>> 92674d26098eb58daedabca22370a931235caefc
 import {
     fetchGroups,
     joinGroup,
     leaveGroup,
     updateGroup,
 } from "../api/groupApi";
+<<<<<<< HEAD
 import { useAuth } from "../context/useAuth";
+=======
+import { useAuth } from "../context/AuthContext";
+import { useSearch } from "../context/SearchContext";
+>>>>>>> 92674d26098eb58daedabca22370a931235caefc
 
 const GroupsPage = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const { user } = useAuth();
+    
+    // 🔹 SEARCH FROM CONTEXT OR LOCAL
+    const searchContext = useSearch();
+    const [localSearch, setLocalSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    const searchQuery = searchContext ? searchContext.searchQuery : localSearch;
+
+    // 🔹 DEBOUNCE SEARCH
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     // 🔹 FETCH GROUPS
     const { data, isLoading, error } = useQuery({
-        queryKey: ["groups"],
-        queryFn: fetchGroups,
+        queryKey: ["groups", debouncedSearch],
+        queryFn: () => fetchGroups(debouncedSearch),
         refetchOnMount: true,
     });
 
@@ -108,7 +136,7 @@ const GroupsPage = () => {
           </svg>
         </div>
         <h3 className="text-lg font-bold text-[#991B1B]">Data Sync Failed</h3>
-        <p className="mt-2 text-sm text-[#EF4444]">We couldn't load the groups. Please check your connection.</p>
+        <p className="mt-2 text-sm text-[#EF4444]">We couldn&apos;t load the groups. Please check your connection.</p>
       </div>
     );
 
@@ -137,11 +165,28 @@ const GroupsPage = () => {
                   <h1 className="text-2xl font-bold tracking-tight text-gray-900">Communities</h1>
                   <p className="text-sm font-medium text-gray-500">Discover and join study groups that match your interests.</p>
                 </div>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-1.5 shadow-sm">
-                    <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
-                        {data?.results?.length || 0} Groups
-                    </span>
+                <div className="flex items-center gap-4">
+                    {/* Only show local search if not in dashboard context */}
+                    {!searchContext && (
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search communities..."
+                                value={localSearch}
+                                onChange={(e) => setLocalSearch(e.target.value)}
+                                className="w-64 rounded-xl border border-gray-200 bg-white px-4 py-2 pl-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-50 transition-all"
+                            />
+                            <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    )}
+                    <div className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-1.5 shadow-sm">
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
+                            {data?.results?.length || 0} Groups
+                        </span>
+                    </div>
                 </div>
             </div>
 

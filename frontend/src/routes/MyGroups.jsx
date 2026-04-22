@@ -2,14 +2,29 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/useAuth";
 import { fetchGroups } from "../api/groupApi";
 import { useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { useSearch } from "../context/SearchContext";
 
 const MyGroups = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  const searchContext = useSearch();
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const searchQuery = searchContext?.searchQuery ?? "";
+
+  // 🔹 DEBOUNCE SEARCH
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["groups"],
-    queryFn: fetchGroups,
+    queryKey: ["groups", debouncedSearch],
+    queryFn: () => fetchGroups(debouncedSearch),
   });
 
   if (isLoading) return (
@@ -90,7 +105,7 @@ const MyGroups = () => {
         </div>
         {createdGroups.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#E5E7EB] p-8 text-center text-[#6B7280]">
-            You haven't created any groups yet.
+            You haven&apos;t created any groups yet.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,7 +126,7 @@ const MyGroups = () => {
         </div>
         {joinedGroups.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#E5E7EB] p-8 text-center text-[#6B7280]">
-            You haven't joined any groups yet.
+            You haven&apos;t joined any groups yet.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

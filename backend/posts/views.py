@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.exceptions import PermissionDenied
+from django.db.models import Q
 
 from .models import Post
 from .serializers import PostSerializer
@@ -14,6 +15,7 @@ class PostListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         group_id = self.request.query_params.get('group')
+        search = self.request.query_params.get('search', '').strip()
 
         queryset = Post.objects.all().select_related('author', 'group').prefetch_related('comments')
 
@@ -22,6 +24,12 @@ class PostListCreateView(generics.ListCreateAPIView):
                 queryset = queryset.filter(group_id=int(group_id))
         except (ValueError, TypeError):
             pass
+
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) |
+                Q(content__icontains=search)
+            )
 
         return queryset
 
