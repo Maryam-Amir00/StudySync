@@ -1,128 +1,157 @@
 import { useAuth } from "../context/useAuth";
-import { motion as _motion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { fetchGroups } from "../api/groupApi";
 
 const Profile = () => {
   const { user, logout } = useAuth();
 
-  if (!user) return (
-    <div className="flex items-center justify-center min-h-100">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4F46E5]"></div>
-    </div>
-  );
+  const { data: groupsData } = useQuery({
+    queryKey: ["groups"],
+    queryFn: fetchGroups,
+  });
 
-  const container = {
-    hidden: { opacity: 0, y: 20 },
-    show: {
+  if (!user)
+    return (
+      <div className="flex items-center justify-center min-h-[100vh] bg-[#FDFDFF]">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
+      </div>
+    );
+
+  const currentUsername = (user.username || "").toLowerCase().trim();
+
+  const joinedGroupsCount =
+    groupsData?.results?.filter(
+      (group) =>
+        Array.isArray(group.members) &&
+        group.members.some(
+          (m) =>
+            (m?.username || "").toLowerCase().trim() === currentUsername
+        )
+    ).length || 0;
+
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.98 },
+    visible: {
       opacity: 1,
-      y: 0,
+      scale: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.12,
+        delayChildren: 0.1,
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
   };
 
-  const item = {
-    hidden: { opacity: 0, x: -10 },
-    show: { opacity: 1, x: 0 }
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
   };
 
   return (
-    <_motion.div 
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="max-w-4xl mx-auto space-y-8 pb-10"
-    >
-      {/* Header Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#4F46E5] to-[#8B5CF6] p-8 text-white shadow-lg">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="relative flex flex-col md:flex-row items-center gap-6">
-          <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-3xl font-bold shadow-xl">
-            {(user.username || "U").slice(0, 2).toUpperCase()}
-          </div>
-          <div className="text-center md:text-left space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight">{user.username}</h1>
-            <p className="text-white/80 font-medium">{user.email}</p>
-            <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-2">
-              <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm border border-white/10">
-                Active Student
-              </span>
-              <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm border border-white/10">
-                StudySync Pro
-              </span>
+    <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden rounded-[3rem] bg-[#FDFDFF] px-4">
+      {/* 🌌 Animated Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-indigo-500/5 to-transparent rounded-full blur-[100px]"
+        />
+        <motion.div
+          animate={{ rotate: [360, 0], scale: [1.1, 1, 1.1] }}
+          transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tr from-purple-500/5 to-transparent rounded-full blur-[100px]"
+        />
+      </div>
+
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 w-full max-w-lg space-y-12"
+      >
+        {/* 👤 Profile Section */}
+        <div className="flex flex-col items-center text-center space-y-6">
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ scale: 1.05, rotate: 2 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative group cursor-pointer"
+          >
+            <div className="absolute -inset-2 bg-indigo-500/5 rounded-[2.8rem] blur-xl opacity-0 group-hover:opacity-100 transition duration-500" />
+
+            <div className="relative h-32 w-32 rounded-[2.5rem] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 flex items-center justify-center text-4xl font-black text-slate-800 transition-all duration-500 group-hover:shadow-indigo-500/10">
+              {(user.username || "U").slice(0, 1).toUpperCase()}
             </div>
-          </div>
+
+            {/* Active Dot */}
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute -bottom-2 -right-2 h-8 w-8 rounded-2xl bg-emerald-500 border-4 border-[#FDFDFF] shadow-lg"
+            />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <h1 className="text-4xl font-black tracking-tight text-slate-900">
+              {user.username}
+            </h1>
+            <p className="text-sm text-slate-400">@{user.username}</p>
+          </motion.div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* User Details */}
-        <_motion.div variants={item} className="md:col-span-2 space-y-6">
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-bold text-[#111827] mb-6 flex items-center gap-2">
-              <svg className="w-5 h-5 text-[#4F46E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              Account Information
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-[#F3F4F6]">
-                <span className="text-sm font-medium text-[#6B7280]">Full Name</span>
-                <span className="text-sm font-semibold text-[#111827]">{user.first_name || "Not provided"} {user.last_name || ""}</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-[#F3F4F6]">
-                <span className="text-sm font-medium text-[#6B7280]">Username</span>
-                <span className="text-sm font-semibold text-[#111827]">{user.username}</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-[#F3F4F6]">
-                <span className="text-sm font-medium text-[#6B7280]">Email Address</span>
-                <span className="text-sm font-semibold text-[#111827]">{user.email}</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3">
-                <span className="text-sm font-medium text-[#6B7280]">Joined Date</span>
-                <span className="text-sm font-semibold text-[#111827]">April 2026</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 text-center border-dashed">
-            <p className="text-sm text-[#6B7280]">More account settings coming soon...</p>
-          </div>
-        </_motion.div>
-
-        {/* Sidebar/Actions */}
-        <_motion.div variants={item} className="space-y-6">
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-bold text-[#111827] mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <button className="w-full flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-medium text-[#374151] transition-all hover:bg-[#F9FAFB] hover:border-[#4F46E5] group">
-                <svg className="w-5 h-5 text-[#6B7280] group-hover:text-[#4F46E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit Profile
-              </button>
-              <button 
-                onClick={logout}
-                className="w-full flex items-center gap-3 rounded-xl border border-[#FEE2E2] bg-[#FEF2F2] px-4 py-3 text-sm font-medium text-[#EF4444] transition-all hover:bg-[#FEE2E2]"
+        {/* 📊 Stats Card */}
+        <motion.div
+          variants={itemVariants}
+          whileHover={{ y: -5 }}
+          className="bg-white/50 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 p-10 shadow-[0_40px_80px_rgba(0,0,0,0.03)]"
+        >
+          <div className="flex flex-col items-center gap-6">
+            <div className="text-center">
+              <motion.p
+                whileHover={{ scale: 1.1, color: "#4F46E5" }}
+                className="text-4xl font-black text-slate-900"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Sign Out
-              </button>
+                {joinedGroupsCount}
+              </motion.p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Communities Joined
+              </p>
+            </div>
+
+            <div className="w-full border-t border-slate-100 pt-6 flex justify-between text-sm">
+              <span className="text-slate-400">Digital ID</span>
+              <span className="font-semibold text-slate-700">
+                @{user.username}
+              </span>
             </div>
           </div>
+        </motion.div>
 
-          <div className="rounded-2xl bg-linear-to-br from-[#111827] to-[#374151] p-6 text-white shadow-lg">
-            <h4 className="font-bold mb-2">StudySync Tip</h4>
-            <p className="text-xs text-white/70 leading-relaxed">
-              Active participation in study groups increases retention by up to 40%. Join a new group today!
-            </p>
-          </div>
-        </_motion.div>
-      </div>
-    </_motion.div>
+        {/* 🔥 TERMINATE SESSION BUTTON */}
+        <motion.div variants={itemVariants} className="flex justify-center">
+          <motion.button
+            onClick={logout}
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.96 }}
+            className="relative group overflow-hidden rounded-2xl px-8 py-3 font-semibold text-sm tracking-wide text-white bg-gradient-to-r from-rose-500 to-pink-500 shadow-lg transition-all duration-300"
+          >
+            {/* Glow Effect */}
+            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 blur-xl bg-rose-400/40"></span>
+
+            {/* Content */}
+            <span className="relative z-10 flex items-center gap-2">
+              Terminate Session
+            </span>
+          </motion.button>
+        </motion.div>
+      </motion.div>
+    </div>
   );
 };
 
