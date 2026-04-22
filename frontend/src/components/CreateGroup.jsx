@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { createGroup } from "../api/groupApi";
-import { motion } from "framer-motion";
+import { motion as _motion } from "framer-motion";
 
 const CreateGroup = () => {
     const [name, setName] = useState("");
@@ -55,7 +55,7 @@ const CreateGroup = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-              <motion.button
+              <_motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
@@ -63,7 +63,7 @@ const CreateGroup = () => {
                   className="w-full sm:w-auto rounded-[1.25rem] bg-[#4F46E5] px-10 py-4 text-sm font-black uppercase tracking-widest text-white shadow-[0_12px_24px_-6px_rgba(79,70,229,0.4)] transition-all hover:bg-[#4338CA] hover:shadow-[0_16px_32px_-8px_rgba(79,70,229,0.5)] disabled:cursor-not-allowed disabled:bg-[#A5B4FC] disabled:shadow-none"
               >
                   {mutation.isPending ? "Syncing..." : "Launch Community"}
-              </motion.button>
+              </_motion.button>
               
               <p className="text-[11px] font-bold text-[#6B7280] leading-tight max-w-[200px]">
                 By launching, you agree to lead this community with integrity.

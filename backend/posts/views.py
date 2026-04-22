@@ -13,12 +13,9 @@ class PostListCreateView(generics.ListCreateAPIView):
     pagination_class = PostPagination
 
     def get_queryset(self):
-        user = self.request.user
         group_id = self.request.query_params.get('group')
 
-        queryset = Post.objects.filter(
-            group__memberships__user=user
-        ).select_related('author', 'group').prefetch_related('comments').distinct()
+        queryset = Post.objects.all().select_related('author', 'group').prefetch_related('comments')
 
         try:
             if group_id:
@@ -43,8 +40,4 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnly]
 
     def get_queryset(self):
-        user = self.request.user
-
-        return Post.objects.filter(
-            group__memberships__user=user
-        ).select_related('author', 'group').prefetch_related('comments').distinct()
+        return Post.objects.all().select_related('author', 'group').prefetch_related('comments')

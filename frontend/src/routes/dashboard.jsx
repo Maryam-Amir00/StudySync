@@ -1,7 +1,7 @@
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "@tanstack/react-router";
-import { useAuth } from "../context/AuthContext";
-import { motion } from "framer-motion";
+import { useAuth } from "../context/useAuth";
+import { motion as _motion } from "framer-motion";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -11,7 +11,7 @@ const Dashboard = () => {
       <Sidebar />
 
       <main className="relative ml-20 h-screen overflow-y-auto bg-white custom-scrollbar">
-        <motion.div 
+        <_motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
@@ -54,7 +54,7 @@ const Dashboard = () => {
               <Outlet />
             </div>
           </div>
-        </motion.div>
+        </_motion.div>
       </main>
     </div>
   );

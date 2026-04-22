@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { motion as _motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 
 import { loginUser } from "../api/authApi";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import logo from "../assets/logo.png";
 
 const Login = () => {
@@ -68,7 +68,7 @@ const Login = () => {
       <div className="absolute w-85 h-85 bg-[#A5B4FC]/40 rounded-full blur-3xl -bottom-25 -right-25" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[linear-gradient(#4F46E5_1px,transparent_1px),linear-gradient(90deg,#4F46E5_1px,transparent_1px)] bg-size-[42px_42px]" />
 
-      <motion.div
+      <_motion.div
         variants={container}
         initial="hidden"
         animate="show"
@@ -77,7 +77,7 @@ const Login = () => {
 
         <div className="absolute top-0 left-0 w-full h-1 bg-[#4F46E5] rounded-t-2xl" />
 
-        <motion.div variants={item} className="mb-8 text-center">
+        <_motion.div variants={item} className="mb-8 text-center">
           <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-white/85 border border-[#E5E7EB] shadow-sm flex items-center justify-center">
             <img src={logo} alt="StudySync logo" className="w-12 h-12 object-contain" />
           </div>
@@ -87,12 +87,12 @@ const Login = () => {
           <p className="text-sm text-[#6B7280] mt-2">
             A calm space to collaborate and learn
           </p>
-        </motion.div>
+        </_motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
 
 
-          <motion.div variants={item}>
+          <_motion.div variants={item}>
             <label className="text-sm font-medium text-[#374151] block mb-1">
               Username
             </label>
@@ -108,9 +108,9 @@ const Login = () => {
                 setForm({ ...form, username: e.target.value })
               }
             />
-          </motion.div>
+          </_motion.div>
 
-          <motion.div variants={item}>
+          <_motion.div variants={item}>
             <label className="text-sm font-medium text-[#374151] block mb-1">
               Password
             </label>
@@ -126,9 +126,9 @@ const Login = () => {
                 setForm({ ...form, password: e.target.value })
               }
             />
-          </motion.div>
+          </_motion.div>
 
-          <motion.button
+          <_motion.button
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -148,12 +148,12 @@ const Login = () => {
           transition-colors duration-200 shadow-sm hover:shadow-lg"
           >
             {mutation.isPending ? "Signing in..." : "Sign In"}
-          </motion.button>
+          </_motion.button>
         </form>
 
         <div className="relative mt-6 h-6">
 
-          <motion.p
+          <_motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
@@ -166,10 +166,10 @@ const Login = () => {
             >
               Register
             </span>
-          </motion.p>
+          </_motion.p>
 
         </div>
-      </motion.div>
+      </_motion.div>
     </div>
     
   );

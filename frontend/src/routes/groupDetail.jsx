@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { toast } from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as _motion, AnimatePresence } from "framer-motion";
 import {
   fetchPosts,
   createPost,
@@ -20,7 +20,8 @@ import {
   updateComment,
 } from "../api/commentApi";
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../context/AuthContext";
+import { createPortal } from "react-dom";
+import { useAuth } from "../context/useAuth";
 
 const GroupDetail = () => {
   const { groupId } = useParams({ from: "/groups/$groupId" });
@@ -34,6 +35,8 @@ const GroupDetail = () => {
 
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [commentText, setCommentText] = useState("");
+  const [editingComment, setEditingComment] = useState(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
 
   const commentsEndRef = useRef(null);
 
@@ -42,6 +45,12 @@ const GroupDetail = () => {
     queryKey: ["group", groupId],
     queryFn: () => fetchGroup(groupId),
   });
+  const currentUsername = (user?.username || "").toLowerCase().trim();
+  const isMember = Array.isArray(groupData?.members)
+    ? groupData.members.some(
+        (member) => (member?.username || "").toLowerCase().trim() === currentUsername
+      )
+    : false;
 
   // 🔥 POSTS
   const { data: postsData, isLoading } = useQuery({
@@ -134,6 +143,30 @@ const GroupDetail = () => {
     onError: () => toast.error("Error updating comment"),
   });
 
+  const openCommentEditor = (comment) => {
+    setEditingComment(comment);
+    setEditingCommentText(comment?.content || "");
+  };
+
+  const closeCommentEditor = () => {
+    setEditingComment(null);
+    setEditingCommentText("");
+  };
+
+  const saveEditedComment = () => {
+    if (!editingComment || !selectedPost) return;
+    const trimmedText = editingCommentText.trim();
+    if (!trimmedText) {
+      toast.error("Comment cannot be empty");
+      return;
+    }
+
+    updateCommentMutation.mutate(
+      { postId: selectedPost.id, commentId: editingComment.id, content: trimmedText },
+      { onSuccess: () => closeCommentEditor() }
+    );
+  };
+
   if (isLoading) return (
     <div className="flex h-full items-center justify-center min-h-100">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4F46E5]"></div>
@@ -167,12 +200,23 @@ const GroupDetail = () => {
               Back
             </button>
             <button
-              onClick={() => setShowPostComposer((prev) => !prev)}
+              onClick={() => {
+                if (!isMember) {
+                  toast.error("Join this group to create a post.");
+                  return;
+                }
+                setShowPostComposer((prev) => !prev);
+              }}
               className={`rounded-xl px-5 py-2 text-sm font-bold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 ${
-                showPostComposer ? "bg-[#6B7280] hover:bg-[#4B5563]" : "bg-linear-to-r from-[#4F46E5] to-[#8B5CF6] hover:shadow-lg"
+                !isMember
+                  ? "cursor-not-allowed bg-[#9CA3AF]"
+                  : showPostComposer
+                    ? "bg-[#6B7280] hover:bg-[#4B5563]"
+                    : "bg-linear-to-r from-[#4F46E5] to-[#8B5CF6] hover:shadow-lg"
               }`}
+              title={isMember ? "Create a post" : "Join this group to post"}
             >
-              {showPostComposer ? "Cancel" : "New Post"}
+              {isMember ? (showPostComposer ? "Cancel" : "New Post") : "Members Only"}
             </button>
           </div>
         </div>
@@ -183,7 +227,7 @@ const GroupDetail = () => {
         <section className="flex flex-1 flex-col gap-4 overflow-hidden">
           <AnimatePresence>
             {showPostComposer && (
-              <motion.div
+              <_motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
@@ -219,7 +263,7 @@ const GroupDetail = () => {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </_motion.div>
             )}
           </AnimatePresence>
 
@@ -238,7 +282,7 @@ const GroupDetail = () => {
               </div>
             ) : (
               posts.map((post) => (
-                <motion.div
+                <_motion.div
                   key={post.id}
                   layoutId={`post-${post.id}`}
                   onClick={() => setSelectedPostId(selectedPostId === post.id ? null : post.id)}
@@ -282,7 +326,7 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   )}
-                </motion.div>
+                </_motion.div>
               ))
             )}
           </div>
@@ -293,7 +337,7 @@ const GroupDetail = () => {
           {selectedPost && (
             <>
               {/* Backdrop */}
-              <motion.div
+              <_motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -302,7 +346,7 @@ const GroupDetail = () => {
               />
               
               {/* Sidebar */}
-              <motion.section
+              <_motion.section
                 initial={{ x: "100%", opacity: 0.5 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: "100%", opacity: 0.5 }}
@@ -453,34 +497,7 @@ const GroupDetail = () => {
                               {c.author === user?.username && (
                                 <div className="flex gap-3 opacity-0 transition-opacity group-hover/comment:opacity-100">
                                   <button
-                                    onClick={() => {
-                                      toast((t) => (
-                                        <div className="flex flex-col gap-3 min-w-60">
-                                          <p className="text-sm font-bold text-[#111827]">Edit Comment</p>
-                                          <textarea
-                                            id={`edit-comment-${c.id}`}
-                                            defaultValue={c.content}
-                                            rows={3}
-                                            className="rounded-xl border border-[#E5E7EB] px-3 py-2 text-sm focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#EEF2FF]"
-                                          />
-                                          <div className="flex justify-end gap-2 pt-1">
-                                            <button onClick={() => toast.dismiss(t.id)} className="text-xs font-semibold text-[#6B7280] hover:text-[#111827]">Cancel</button>
-                                            <button
-                                              onClick={() => {
-                                                const text = document.getElementById(`edit-comment-${c.id}`).value;
-                                                if (text) {
-                                                  updateCommentMutation.mutate({ postId: selectedPost.id, commentId: c.id, content: text });
-                                                  toast.dismiss(t.id);
-                                                }
-                                              }}
-                                              className="rounded-xl bg-[#4F46E5] px-4 py-1.5 text-xs font-bold text-white shadow-md hover:bg-[#4338CA]"
-                                            >
-                                              Update
-                                            </button>
-                                          </div>
-                                        </div>
-                                      ), { duration: 6000 });
-                                    }}
+                                    onClick={() => openCommentEditor(c)}
                                     className="text-[10px] font-bold text-[#4F46E5] hover:text-[#4338CA]"
                                   >
                                     Edit
@@ -534,11 +551,59 @@ const GroupDetail = () => {
                     </button>
                   </div>
                 </div>
-              </motion.section>
+              </_motion.section>
             </>
           )}
         </AnimatePresence>
       </div>
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {editingComment && (
+              <>
+                <_motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={closeCommentEditor}
+                  className="fixed inset-0 z-[9998] bg-black/30 backdrop-blur-[2px]"
+                />
+                <_motion.div
+                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                  className="fixed left-1/2 top-1/2 z-[9999] w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-2xl"
+                >
+                  <div className="mb-3">
+                    <h3 className="text-base font-bold text-[#111827]">Edit Comment</h3>
+                  </div>
+                  <textarea
+                    rows={4}
+                    value={editingCommentText}
+                    onChange={(e) => setEditingCommentText(e.target.value)}
+                    className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2 text-sm focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#EEF2FF]"
+                  />
+                  <div className="mt-4 flex justify-end gap-2">
+                    <button
+                      onClick={closeCommentEditor}
+                      className="rounded-xl px-4 py-2 text-xs font-semibold text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={saveEditedComment}
+                      disabled={updateCommentMutation.isPending}
+                      className="rounded-xl bg-[#4F46E5] px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-[#4338CA] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {updateCommentMutation.isPending ? "Updating..." : "Update"}
+                    </button>
+                  </div>
+                </_motion.div>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
     </div>
     </div>
   );

@@ -1,14 +1,16 @@
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as _motion, AnimatePresence } from "framer-motion";
 import {
     fetchGroups,
     joinGroup,
     leaveGroup,
     updateGroup,
 } from "../api/groupApi";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const GroupsPage = () => {
     const queryClient = useQueryClient();
@@ -53,63 +55,41 @@ const GroupsPage = () => {
         },
     });
 
-    // 🔹 EDIT HANDLER
-    const handleEdit = (group) => {
-        toast((t) => (
-            <div className="flex flex-col gap-4 p-1 min-w-[280px]">
-                <div className="flex flex-col gap-1">
-                  <p className="font-bold text-base text-[#111827]">Edit Group</p>
-                  <p className="text-xs text-[#6B7280]">Update community details for everyone.</p>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#4F46E5]">Group Name</label>
-                    <input
-                        id={`edit-name-${group.id}`}
-                        placeholder="e.g. Advanced Calculus"
-                        defaultValue={group.name}
-                        className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm focus:border-[#4F46E5] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#EEF2FF] transition-all"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#4F46E5]">Description</label>
-                    <textarea
-                        id={`edit-desc-${group.id}`}
-                        placeholder="What is this group about?"
-                        defaultValue={group.description}
-                        rows={3}
-                        className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm focus:border-[#4F46E5] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#EEF2FF] transition-all"
-                    />
-                  </div>
-                </div>
+    const [editingGroup, setEditingGroup] = useState(null);
+    const [editName, setEditName] = useState("");
+    const [editDescription, setEditDescription] = useState("");
 
-                <div className="flex justify-end gap-2 pt-2">
-                    <button
-                        onClick={() => toast.dismiss(t.id)}
-                        className="rounded-xl px-4 py-2 text-xs font-bold text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#111827]"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={() => {
-                            const newName = document.getElementById(`edit-name-${group.id}`).value;
-                            const newDesc = document.getElementById(`edit-desc-${group.id}`).value;
-                            if (newName && newDesc) {
-                                updateMutation.mutate({
-                                    id: group.id,
-                                    data: { name: newName, description: newDesc },
-                                });
-                                toast.dismiss(t.id);
-                            }
-                        }}
-                        className="rounded-xl bg-[#4F46E5] px-5 py-2 text-xs font-bold text-white shadow-md shadow-[#4F46E5]/20 transition-all hover:bg-[#4338CA] hover:shadow-lg active:scale-95"
-                    >
-                        Save Changes
-                    </button>
-                </div>
-            </div>
-        ), { duration: 8000 });
+    const openEditModal = (group) => {
+      setEditingGroup(group);
+      setEditName(group?.name || "");
+      setEditDescription(group?.description || "");
+    };
+
+    const closeEditModal = () => {
+      setEditingGroup(null);
+      setEditName("");
+      setEditDescription("");
+    };
+
+    const handleSaveEdit = () => {
+      const trimmedName = editName.trim();
+      const trimmedDescription = editDescription.trim();
+
+      if (!editingGroup) return;
+      if (!trimmedName || !trimmedDescription) {
+        toast.error("Group name and description are required");
+        return;
+      }
+
+      updateMutation.mutate(
+        {
+          id: editingGroup.id,
+          data: { name: trimmedName, description: trimmedDescription },
+        },
+        {
+          onSuccess: () => closeEditModal(),
+        }
+      );
     };
 
     // 🔹 STATES
@@ -172,7 +152,7 @@ const GroupsPage = () => {
                </div>
             )}
 
-            <motion.div 
+            <_motion.div 
               variants={container}
               initial="hidden"
               animate="show"
@@ -186,7 +166,7 @@ const GroupsPage = () => {
                 const isAdmin = (group?.admin || "").toLowerCase().trim() === currentUsername;
 
                 return (
-                    <motion.article
+                    <_motion.article
                         key={group.id}
                         variants={item}
                         onClick={() => navigate({ to: "/groups/$groupId", params: { groupId: group.id } })}
@@ -248,7 +228,7 @@ const GroupsPage = () => {
                                       <button
                                           onClick={(e) => {
                                               e.stopPropagation();
-                                              handleEdit(group);
+                                              openEditModal(group);
                                           }}
                                           className="flex-1 rounded-lg bg-gray-900 py-2 text-[10px] font-bold text-white transition-all hover:bg-gray-800 active:scale-95"
                                       >
@@ -258,10 +238,76 @@ const GroupsPage = () => {
                               </div>
                           )}
                         </div>
-                    </motion.article>
+                    </_motion.article>
                 );
             })}
-            </motion.div>
+            </_motion.div>
+            {typeof document !== "undefined" &&
+              createPortal(
+                <AnimatePresence>
+                  {editingGroup && (
+                    <>
+                      <_motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={closeEditModal}
+                        className="fixed left-0 top-0 z-[9998] h-dvh w-dvw bg-black/30 backdrop-blur-[2px]"
+                      />
+                      <_motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                        className="fixed left-1/2 top-1/2 z-[9999] w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-2xl"
+                      >
+                        <div className="mb-4 space-y-1">
+                          <h3 className="text-base font-bold text-[#111827]">Edit Group</h3>
+                          <p className="text-xs text-[#6B7280]">Update community details for everyone.</p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-[#4F46E5]">Group Name</label>
+                            <input
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              placeholder="e.g. Advanced Calculus"
+                              className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm focus:border-[#4F46E5] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#EEF2FF]"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-[#4F46E5]">Description</label>
+                            <textarea
+                              value={editDescription}
+                              onChange={(e) => setEditDescription(e.target.value)}
+                              placeholder="What is this group about?"
+                              rows={3}
+                              className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm focus:border-[#4F46E5] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#EEF2FF]"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-5 flex justify-end gap-2">
+                          <button
+                            onClick={closeEditModal}
+                            className="rounded-xl px-4 py-2 text-xs font-bold text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#111827]"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleSaveEdit}
+                            disabled={updateMutation.isPending}
+                            className="rounded-xl bg-[#4F46E5] px-5 py-2 text-xs font-bold text-white shadow-md shadow-[#4F46E5]/20 transition-all hover:bg-[#4338CA] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                          </button>
+                        </div>
+                      </_motion.div>
+                    </>
+                  )}
+                </AnimatePresence>,
+                document.body
+              )}
         </div>
     );
 };

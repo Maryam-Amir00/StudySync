@@ -16,12 +16,10 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs['post_id']
-        user = self.request.user
 
         return Comment.objects.filter(
-            post_id=post_id,
-            post__group__memberships__user=user
-        ).select_related('author', 'post').distinct()
+            post_id=post_id
+        ).select_related('author', 'post')
 
     def perform_create(self, serializer):
         post_id = self.kwargs['post_id']
@@ -41,9 +39,7 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs['post_id']
-        user = self.request.user
 
         return Comment.objects.filter(
-            post_id=post_id,
-            post__group__memberships__user=user
-        ).select_related('author', 'post').distinct()
+            post_id=post_id
+        ).select_related('author', 'post')

@@ -1,5 +1,5 @@
-import { useAuth } from "../context/AuthContext";
-import { motion } from "framer-motion";
+import { useAuth } from "../context/useAuth";
+import { motion as _motion } from "framer-motion";
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -27,7 +27,7 @@ const Profile = () => {
   };
 
   return (
-    <motion.div 
+    <_motion.div 
       variants={container}
       initial="hidden"
       animate="show"
@@ -57,7 +57,7 @@ const Profile = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* User Details */}
-        <motion.div variants={item} className="md:col-span-2 space-y-6">
+        <_motion.div variants={item} className="md:col-span-2 space-y-6">
           <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
             <h3 className="text-lg font-bold text-[#111827] mb-6 flex items-center gap-2">
               <svg className="w-5 h-5 text-[#4F46E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,10 +89,10 @@ const Profile = () => {
           <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 text-center border-dashed">
             <p className="text-sm text-[#6B7280]">More account settings coming soon...</p>
           </div>
-        </motion.div>
+        </_motion.div>
 
         {/* Sidebar/Actions */}
-        <motion.div variants={item} className="space-y-6">
+        <_motion.div variants={item} className="space-y-6">
           <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
             <h3 className="text-lg font-bold text-[#111827] mb-4">Quick Actions</h3>
             <div className="space-y-3">
@@ -120,9 +120,9 @@ const Profile = () => {
               Active participation in study groups increases retention by up to 40%. Join a new group today!
             </p>
           </div>
-        </motion.div>
+        </_motion.div>
       </div>
-    </motion.div>
+    </_motion.div>
   );
 };
 

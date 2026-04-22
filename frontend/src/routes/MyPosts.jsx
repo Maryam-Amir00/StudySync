@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { fetchPosts } from "../api/postApi";
 import { useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { motion as _motion } from "framer-motion";
 
 const MyPosts = () => {
   const { user } = useAuth();
@@ -64,14 +64,14 @@ const MyPosts = () => {
           <p className="text-xs">Share your thoughts in any of your joined groups!</p>
         </div>
       ) : (
-        <motion.div 
+        <_motion.div 
           variants={container}
           initial="hidden"
           animate="show"
           className="grid grid-cols-1 gap-4"
         >
           {myPosts.map((post) => (
-            <motion.div
+            <_motion.div
               key={post.id}
               variants={item}
               onClick={() =>
@@ -113,9 +113,9 @@ const MyPosts = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </div>
-            </motion.div>
+            </_motion.div>
           ))}
-        </motion.div>
+        </_motion.div>
       )}
     </div>
   );

@@ -18,7 +18,7 @@ export const deleteComment = async ({ postId, commentId }) => {
 };
 
 export const updateComment = async ({ postId, commentId, content }) => {
-  const res = await axiosInstance.put(
+  const res = await axiosInstance.patch(
     `/comments/${postId}/${commentId}/`,
     { content }
   );
