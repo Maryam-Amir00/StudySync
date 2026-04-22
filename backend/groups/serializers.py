@@ -9,8 +9,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = ['id', 'name', 'description', 'created_by', 'admin', 'members']
-        read_only_fields = ['created_by', 'admin', 'members']
+        fields = ['id', 'name', 'description', 'created_by', 'admin', 'members', 'created_at']
+        read_only_fields = ['created_by', 'admin', 'members', 'created_at']
 
     def get_members(self, obj):
         memberships = obj.memberships.select_related('user')

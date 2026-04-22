@@ -8,10 +8,9 @@ const Sidebar = () => {
 
   const isActive = (path) => pathname === path;
   const iconItemClass = (path) =>
-    `group relative inline-flex h-12 w-12 items-center justify-center rounded-xl border transition-all duration-200 ${
-      isActive(path)
-        ? "border-[#4F46E5] bg-[#EEF2FF] text-[#4F46E5] shadow-[0_10px_24px_rgba(79,70,229,0.22)] scale-105"
-        : "border-transparent text-[#6B7280] hover:border-[#E5E7EB] hover:bg-[#EEF2FF] hover:text-[#4338CA] hover:scale-105"
+    `group relative inline-flex h-12 w-12 items-center justify-center rounded-xl border transition-all duration-200 ${isActive(path)
+      ? "border-[#4F46E5] bg-[#EEF2FF] text-[#4F46E5] shadow-[0_10px_24px_rgba(79,70,229,0.22)] scale-105"
+      : "border-transparent text-[#6B7280] hover:border-[#E5E7EB] hover:bg-[#EEF2FF] hover:text-[#4338CA] hover:scale-105"
     }`;
 
   return (
@@ -148,37 +147,35 @@ const Sidebar = () => {
 
           <div className="mt-auto flex flex-col items-center gap-2 pb-3">
 
-  {/* Divider */}
-  <div className="h-px w-10 bg-[#E5E7EB]" />
+            <div className="h-px w-10 bg-[#E5E7EB]" />
 
-  {/* Logout Button */}
-  <button
-    onClick={() => {
-      localStorage.removeItem("access");
-      window.location.href = "/login";
-    }}
-    className="group relative inline-flex h-12 w-12 items-center justify-center rounded-xl border border-transparent text-[#EF4444] transition-all duration-200 hover:border-[#FECACA] hover:bg-[#FEF2F2] hover:scale-105"
-  >
-    <svg
-      className="h-5 w-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
+            <button
+              onClick={() => {
+                localStorage.removeItem("access");
+                window.location.href = "/";
+              }}
+              className="group relative inline-flex h-12 w-12 items-center justify-center rounded-xl border border-transparent text-[#EF4444] transition-all duration-200 hover:border-[#FECACA] hover:bg-[#FEF2F2] hover:scale-105"
+            >
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
 
-    {/* Tooltip */}
-    <span className="pointer-events-none absolute left-14 z-20 hidden rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] px-2 py-1 text-xs font-medium text-[#374151] shadow-md group-hover:block">
-      Logout
-    </span>
-  </button>
-</div>
+
+              <span className="pointer-events-none absolute left-14 z-20 hidden rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] px-2 py-1 text-xs font-medium text-[#374151] shadow-md group-hover:block">
+                Logout
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </aside>

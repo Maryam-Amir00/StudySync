@@ -6,6 +6,10 @@ import { fetchGroups } from "../api/groupApi";
 const Profile = () => {
   const { user, logout } = useAuth();
 
+  const handleLogout = () => {
+    logout();
+  };
+
   const { data: groupsData } = useQuery({
     queryKey: ["groups"],
     queryFn: fetchGroups,
@@ -36,10 +40,10 @@ const Profile = () => {
       opacity: 1,
       scale: 1,
       transition: {
-        staggerChildren: 0.12,
+        staggerChildren: 0.1,
         delayChildren: 0.1,
-        duration: 0.8,
-        ease: [0.22, 1, 0.36, 1],
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
       },
     },
   };
@@ -49,7 +53,10 @@ const Profile = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
+      transition: { 
+        duration: 0.5, 
+        ease: [0.16, 1, 0.3, 1] 
+      },
     },
   };
 
@@ -136,7 +143,7 @@ const Profile = () => {
         {/* 🔥 TERMINATE SESSION BUTTON */}
         <motion.div variants={itemVariants} className="flex justify-center">
           <motion.button
-            onClick={logout}
+            onClick={handleLogout}
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.96 }}
             className="relative group overflow-hidden rounded-2xl px-8 py-3 font-semibold text-sm tracking-wide text-white bg-gradient-to-r from-rose-500 to-pink-500 shadow-lg transition-all duration-300"

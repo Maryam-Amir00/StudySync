@@ -54,14 +54,24 @@ const MyPosts = () => {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.06,
+        delayChildren: 0.05,
+        ease: "easeOut"
       }
     }
   };
 
   const item = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0 }
+    hidden: { opacity: 0, y: 20, scale: 0.94 },
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.16, 1, 0.3, 1] // Premium out-expo ease
+      }
+    }
   };
 
   return (
@@ -89,13 +99,20 @@ const MyPosts = () => {
             <_motion.div
               key={post.id}
               variants={item}
+              whileHover={{ 
+                y: -5,
+                scale: 1.005,
+                boxShadow: "0 20px 40px -12px rgba(79, 70, 229, 0.08)",
+                transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+              }}
+              whileTap={{ scale: 0.99 }}
               onClick={() =>
                 navigate({
                   to: "/groups/$groupId",
                   params: { groupId: post.group_details?.id || post.group },
                 })
               }
-              className="group cursor-pointer rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#C7D2FE] hover:shadow-[0_12px_24px_rgba(17,24,39,0.10)]"
+              className="group cursor-pointer rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm"
             >
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">

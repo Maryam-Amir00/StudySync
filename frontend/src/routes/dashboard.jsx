@@ -1,10 +1,12 @@
 import Sidebar from "../components/Sidebar";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useLocation } from "@tanstack/react-router";
 import { motion as _motion } from "framer-motion";
 import { SearchProvider, useSearch } from "../context/SearchContext";
 
 const DashboardContent = () => {
   const { searchQuery, setSearchQuery } = useSearch();
+  const location = useLocation();
+  const isProfilePage = location.pathname === "/dashboard/profile";
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-[#F9FAFB]">
@@ -21,7 +23,7 @@ const DashboardContent = () => {
             <div className="mx-auto flex w-full max-w-4xl items-center justify-center">
               <div className="relative w-full">
                 <svg
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors duration-200"
+                  className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${isProfilePage ? "text-slate-300" : "text-slate-400"}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -30,16 +32,16 @@ const DashboardContent = () => {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search your workspace..."
+                  placeholder={isProfilePage ? "Search disabled on profile" : "Search your workspace..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-11 w-full rounded-2xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-sm text-slate-700 shadow-[0_6px_16px_rgba(15,23,42,0.06)] transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 hover:shadow-[0_10px_22px_rgba(15,23,42,0.08)] focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                  disabled={isProfilePage}
+                  className={`h-11 w-full rounded-2xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-sm text-slate-700 shadow-[0_6px_16px_rgba(15,23,42,0.06)] transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 hover:shadow-[0_10px_22px_rgba(15,23,42,0.08)] focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${isProfilePage ? "cursor-not-allowed opacity-60 bg-slate-50" : ""}`}
                 />
               </div>
             </div>
           </header>
 
-          {/* 🧩 Content Area */}
           <div className="flex-1 px-8 py-8">
             <div className="mx-auto max-w-7xl">
               <Outlet />

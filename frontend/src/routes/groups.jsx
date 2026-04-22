@@ -19,14 +19,12 @@ const GroupsPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     
-    // 🔹 SEARCH FROM CONTEXT OR LOCAL
     const searchContext = useSearch();
     const [localSearch, setLocalSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
     const searchQuery = searchContext ? searchContext.searchQuery : localSearch;
 
-    // 🔹 DEBOUNCE SEARCH
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchQuery);
@@ -34,14 +32,13 @@ const GroupsPage = () => {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // 🔹 FETCH GROUPS
+
     const { data, isLoading, error } = useQuery({
         queryKey: ["groups", debouncedSearch],
         queryFn: () => fetchGroups(debouncedSearch),
         refetchOnMount: true,
     });
 
-    // 🔹 JOIN
     const joinMutation = useMutation({
         mutationFn: joinGroup,
         onSuccess: () => {
@@ -50,7 +47,6 @@ const GroupsPage = () => {
         },
     });
 
-    // 🔹 LEAVE
     const leaveMutation = useMutation({
         mutationFn: leaveGroup,
         onSuccess: () => {
@@ -59,7 +55,6 @@ const GroupsPage = () => {
         },
     });
 
-    // 🔹 UPDATE
     const updateMutation = useMutation({
         mutationFn: updateGroup,
         onSuccess: () => {
@@ -109,7 +104,7 @@ const GroupsPage = () => {
       );
     };
 
-    // 🔹 STATES
+
     if (isLoading) return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#EEF2FF] border-t-[#4F46E5]" />
@@ -137,14 +132,24 @@ const GroupsPage = () => {
       show: {
         opacity: 1,
         transition: {
-          staggerChildren: 0.1
+          staggerChildren: 0.06,
+          delayChildren: 0.05,
+          ease: "easeOut"
         }
       }
     };
 
     const item = {
-      hidden: { opacity: 0, y: 20 },
-      show: { opacity: 1, y: 0 }
+      hidden: { opacity: 0, y: 20, scale: 0.94 },
+      show: { 
+        opacity: 1, 
+        y: 0, 
+        scale: 1,
+        transition: {
+          duration: 0.5,
+          ease: [0.16, 1, 0.3, 1] // Premium out-expo ease
+        }
+      }
     };
 
     return (
@@ -155,7 +160,6 @@ const GroupsPage = () => {
                   <p className="text-sm font-medium text-gray-500">Discover and join study groups that match your interests.</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    {/* Only show local search if not in dashboard context */}
                     {!searchContext && (
                         <div className="relative">
                             <input
@@ -203,8 +207,15 @@ const GroupsPage = () => {
                     <_motion.article
                         key={group.id}
                         variants={item}
+                        whileHover={{ 
+                            y: -8,
+                            scale: 1.015,
+                            boxShadow: "0 25px 50px -12px rgba(79, 70, 229, 0.12)",
+                            transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+                        }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => navigate({ to: "/groups/$groupId", params: { groupId: group.id } })}
-                        className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white p-6 transition-all duration-200 hover:border-indigo-100 hover:shadow-md cursor-pointer"
+                        className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white p-6 shadow-sm cursor-pointer"
                     >
                         <div className="mb-4 flex justify-between items-start">
                           <div className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${isMember ? 'bg-emerald-50 text-emerald-700' : 'bg-indigo-50 text-indigo-700'}`}>
@@ -231,43 +242,49 @@ const GroupsPage = () => {
                                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                {group.created_at ? new Date(group.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : "N/A"}
+                                {group.created_at ? new Date(group.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : "N/A"}
                             </div>
                         </div>
 
                         <div className="mt-6">
                           {!isMember ? (
-                              <button
+                              <_motion.button
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
                                   onClick={(e) => {
                                       e.stopPropagation();
                                       joinMutation.mutate(group.id);
                                   }}
-                                  className="w-full rounded-lg bg-indigo-600 py-2 text-xs font-bold text-white transition-all hover:bg-indigo-700 active:scale-95"
+                                  className="w-full rounded-lg bg-indigo-600 py-2 text-xs font-bold text-white transition-all hover:bg-indigo-700"
                               >
                                 Join Group
-                              </button>
+                              </_motion.button>
                           ) : (
                               <div className="flex w-full gap-2">
-                                  <button
+                                  <_motion.button
+                                      whileHover={{ scale: 1.02 }}
+                                      whileTap={{ scale: 0.98 }}
                                       onClick={(e) => {
                                           e.stopPropagation();
                                           leaveMutation.mutate(group.id);
                                       }}
-                                      className="flex-1 rounded-lg border border-red-100 bg-red-50 py-2 text-[10px] font-bold text-red-600 transition-all hover:bg-red-100 active:scale-95"
+                                      className="flex-1 rounded-lg border border-red-100 bg-red-50 py-2 text-[10px] font-bold text-red-600 transition-all hover:bg-red-100"
                                   >
                                       Leave
-                                  </button>
+                                  </_motion.button>
 
                                   {isAdmin && (
-                                      <button
+                                      <_motion.button
+                                          whileHover={{ scale: 1.02 }}
+                                          whileTap={{ scale: 0.98 }}
                                           onClick={(e) => {
                                               e.stopPropagation();
                                               openEditModal(group);
                                           }}
-                                          className="flex-1 rounded-lg bg-gray-900 py-2 text-[10px] font-bold text-white transition-all hover:bg-gray-800 active:scale-95"
+                                          className="flex-1 rounded-lg bg-gray-900 py-2 text-[10px] font-bold text-white transition-all hover:bg-gray-800"
                                       >
-                                          Settings
-                                      </button>
+                                          Edit
+                                      </_motion.button>
                                   )}
                               </div>
                           )}

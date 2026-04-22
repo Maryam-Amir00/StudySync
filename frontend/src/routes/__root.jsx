@@ -19,7 +19,6 @@ import Profile from "./Profile";
 import CreateGroupPage from "./CreateGroupPage";
 
 
-// ROOT
 const rootRoute = createRootRoute({
   component: () => (
     <>
@@ -30,7 +29,6 @@ const rootRoute = createRootRoute({
 });
 
 
-// AUTH ROUTES
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
@@ -44,7 +42,6 @@ const registerRoute = createRoute({
 });
 
 
-// DASHBOARD (LAYOUT)
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
@@ -56,10 +53,9 @@ const dashboardRoute = createRoute({
 });
 
 
-// ✅ DEFAULT CHILD (VERY IMPORTANT)
 const dashboardIndexRoute = createRoute({
   getParentRoute: () => dashboardRoute,
-  path: "/",   // default inside dashboard
+  path: "/",   
   component: GroupsPage,
 });
 
@@ -90,7 +86,6 @@ const createGroupRoute = createRoute({
 });
 
 
-// OTHER ROUTES
 const groupsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/groups",
@@ -104,12 +99,12 @@ const groupDetailRoute = createRoute({
 });
 
 
-// ROUTE TREE
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   registerRoute,
   dashboardRoute.addChildren([
-    dashboardIndexRoute,   // ✅ THIS FIXES YOUR ISSUE
+    dashboardIndexRoute,   
     profileRoute,
     myGroupsRoute,
     myPostsRoute,
