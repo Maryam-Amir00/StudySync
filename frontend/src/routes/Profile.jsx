@@ -1,12 +1,11 @@
 import { useAuth } from "../context/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { fetchGroups } from "../api/groupApi";
 import { fetchPosts } from "../api/postApi";
 import { 
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip, 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Sector
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip,  Sector
 } from "recharts";
 import { 
   Users, BookOpen, PenTool, TrendingUp, 
@@ -16,12 +15,14 @@ import {
 const Profile = () => {
   const { user, logout } = useAuth();
   const [activePieIndex, setActivePieIndex] = useState(0);
+  const [isPieAnimating, setIsPieAnimating] = useState(true);
 
-  const onPieEnter = (_, index) => {
+  const onPieEnter = useCallback((_, index) => {
     setActivePieIndex(index);
-  };
+    setIsPieAnimating(false);
+  }, []);
 
-  const renderActiveShape = (props) => {
+  const renderActiveShape = useCallback((props) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
     return (
       <g>
@@ -29,24 +30,24 @@ const Profile = () => {
           cx={cx}
           cy={cy}
           innerRadius={innerRadius}
-          outerRadius={outerRadius + 10}
+          outerRadius={outerRadius + 8}
           startAngle={startAngle}
           endAngle={endAngle}
           fill={fill}
-          style={{ filter: 'drop-shadow(0px 0px 8px rgba(0,0,0,0.1))' }}
         />
         <Sector
           cx={cx}
           cy={cy}
           startAngle={startAngle}
           endAngle={endAngle}
-          innerRadius={outerRadius + 14}
-          outerRadius={outerRadius + 16}
+          innerRadius={outerRadius + 12}
+          outerRadius={outerRadius + 14}
           fill={fill}
+          opacity={0.3}
         />
       </g>
     );
-  };
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -285,8 +286,9 @@ const Profile = () => {
                       dataKey="value"
                       stroke="none"
                       onMouseEnter={onPieEnter}
-                      animationBegin={0}
-                      animationDuration={1500}
+                      animationBegin={200}
+                      animationDuration={800}
+                      isAnimationActive={isPieAnimating}
                     >
                       {postsPerGroup.map((entry, index) => (
                         <Cell 
@@ -323,15 +325,22 @@ const Profile = () => {
               {postsPerGroup.map((entry, index) => (
                 <motion.div 
                   key={index} 
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border transition-all duration-300 ${
+                  transition={{ 
+                    duration: 0.4,
+                    delay: 0.3 + index * 0.08,
+                    ease: "easeOut"
+                  }}
+                  className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl border transition-all duration-500 cursor-pointer ${
                     activePieIndex === index 
-                    ? 'bg-slate-50 border-slate-200 scale-110 shadow-sm' 
+                    ? 'bg-white border-slate-200 scale-110 shadow-md shadow-indigo-500/5' 
                     : 'border-transparent'
                   }`}
-                  onMouseEnter={() => setActivePieIndex(index)}
+                  onMouseEnter={() => {
+                    setActivePieIndex(index);
+                    setIsPieAnimating(false);
+                  }}
                 >
                   <div 
                     className="h-2.5 w-2.5 rounded-full shadow-sm" 
