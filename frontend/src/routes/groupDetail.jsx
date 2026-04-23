@@ -190,84 +190,114 @@ const GroupDetail = () => {
   );
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-gray-50 p-4 md:p-8">
-      <div className="relative z-10 flex flex-1 flex-col gap-6">
-        {/* 🔹 MINIMAL MODERN HEADER */}
-        <_motion.header
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="relative flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-6 py-4 shadow-sm"
-        >
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate({ to: "/dashboard" })}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-gray-50 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </button>
+    <div className="relative flex min-h-screen flex-col bg-[#F8FAFC] p-4 md:p-8">
+      {/* 🌌 Subtle Background Glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-indigo-500/5 blur-[100px]" />
+        <div className="absolute top-1/2 right-0 h-64 w-64 -translate-y-1/2 rounded-full bg-purple-500/5 blur-[80px]" />
+      </div>
 
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="truncate text-lg font-bold text-gray-900">
-                  {groupData?.name || "Group Posts"}
-                </h1>
-                {isMember && (
-                  <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600">
-                    Member
-                  </span>
+      <div className="relative z-10 flex flex-1 flex-col gap-8">
+        {/* 🔹 PREMIUM MINIMAL HEADER */}
+        <_motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="relative overflow-hidden rounded-[2.5rem] border border-white/60 bg-white/70 p-8 shadow-[0_20px_40px_rgba(0,0,0,0.02)] backdrop-blur-2xl"
+        >
+          {/* Decorative Background Element */}
+          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-indigo-500/5 blur-3xl" />
+
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="flex flex-1 items-start gap-6">
+              <button
+                onClick={() => navigate({ to: "/dashboard" })}
+                className="group flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:scale-110 hover:border-indigo-100 hover:bg-indigo-50"
+              >
+                <svg className="h-5 w-5 text-slate-400 transition-colors group-hover:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+
+              <div className="min-w-0 space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="text-3xl font-black tracking-tight text-slate-900">
+                    {groupData?.name || "Community"}
+                  </h1>
+                  {isMember && (
+                    <span className="rounded-full bg-indigo-50/50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-600 border border-indigo-100/50">
+                      Member
+                    </span>
+                  )}
+                </div>
+                
+                {groupData?.description && (
+                  <p className="max-w-3xl text-base font-medium leading-relaxed text-slate-500/90">
+                    {groupData.description}
+                  </p>
                 )}
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-[11px] font-bold uppercase tracking-widest text-gray-400">
-                <span className="flex items-center gap-1.5">
-                  <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  {groupData?.admin || "Admin"}
-                </span>
-                <span className="h-1 w-1 rounded-full bg-gray-200" />
-                <span className="flex items-center gap-1.5">
-                  <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  {groupData?.members?.length || 0} Members
-                </span>
-                <span className="h-1 w-1 rounded-full bg-gray-200" />
-                <span className="flex items-center gap-1.5">
-                  <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Created {groupData?.created_at ? new Date(groupData.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : "N/A"}
-                </span>
+
+                <div className="flex flex-wrap items-center gap-6 pt-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Admin</span>
+                      <span className="text-xs font-black text-slate-700">{groupData?.admin || "Admin"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Community</span>
+                      <span className="text-xs font-black text-slate-700">{groupData?.members?.length || 0} Members</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Established</span>
+                      <span className="text-xs font-black text-slate-700">
+                        {groupData?.created_at ? new Date(groupData.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <_motion.button
-              whileHover={isMember ? { scale: 1.02 } : {}}
-              whileTap={isMember ? { scale: 0.98 } : {}}
-              onClick={() => {
-                if (isMember) {
-                  setShowPostComposer((prev) => !prev);
-                }
-              }}
-              title={!isMember ? "Only members can post" : ""}
-              className={`flex h-10 items-center gap-2 rounded-xl px-5 text-xs font-bold text-white transition-all ${
-                !isMember
-                  ? "cursor-not-allowed bg-gray-300 opacity-60"
-                  : showPostComposer
-                    ? "bg-gray-800"
-                    : "bg-indigo-600 hover:bg-indigo-700"
-              }`}
-            >
-              <svg className={`h-4 w-4 transition-transform duration-300 ${showPostComposer ? "rotate-45" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-              </svg>
-              {showPostComposer ? "Cancel" : "New Post"}
-            </_motion.button>
+            <div className="flex shrink-0 items-center gap-4">
+              <_motion.button
+                whileHover={isMember ? { scale: 1.05, y: -2 } : {}}
+                whileTap={isMember ? { scale: 0.95 } : {}}
+                onClick={() => isMember && setShowPostComposer((prev) => !prev)}
+                className={`relative flex h-14 items-center gap-3 overflow-hidden rounded-2xl px-8 text-sm font-black transition-all ${
+                  !isMember
+                    ? "cursor-not-allowed bg-slate-100 text-slate-400"
+                    : showPostComposer
+                      ? "bg-slate-900 text-white shadow-xl"
+                      : "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700"
+                }`}
+              >
+                <svg className={`h-5 w-5 transition-transform duration-500 ${showPostComposer ? "rotate-45" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+                {showPostComposer ? "Close" : "Create Post"}
+              </_motion.button>
+            </div>
           </div>
         </_motion.header>
 
