@@ -59,8 +59,6 @@ const dashboardIndexRoute = createRoute({
   component: GroupsPage,
 });
 
-
-// CHILD ROUTES
 const profileRoute = createRoute({
   getParentRoute: () => dashboardRoute,
   path: "/profile",

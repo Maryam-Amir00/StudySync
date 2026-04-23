@@ -90,7 +90,6 @@ const Profile = () => {
     (post) => (post.author || "").toLowerCase().trim() === currentUsername
   );
 
-  // Prepare data for activity feed
   const activities = [
     ...myPosts.map(p => ({
       type: "post",
@@ -105,7 +104,6 @@ const Profile = () => {
     }))
   ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 5);
 
-  // Prepare data for Pie Chart (Posts per Group)
   const postsPerGroup = joinedGroups.map(group => ({
     name: group.name,
     value: myPosts.filter(p => p.group === group.id).length
@@ -134,7 +132,6 @@ const Profile = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] p-4 lg:p-8">
-      {/* 🌌 Sophisticated Animated Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
           animate={{ 
@@ -173,7 +170,6 @@ const Profile = () => {
         animate="visible"
         className="relative z-10 mx-auto max-w-7xl space-y-10"
       >
-        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <motion.div variants={itemVariants} className="flex items-center gap-8">
             <div className="relative group">
@@ -209,7 +205,6 @@ const Profile = () => {
           </motion.button>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             { label: "Communities", value: joinedGroups.length, icon: Users, color: "text-indigo-600", bg: "bg-indigo-50/50", border: "border-indigo-100/50" },
@@ -239,12 +234,10 @@ const Profile = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {/* Analytics Chart */}
           <motion.div
             variants={itemVariants}
             className="bg-white/80 backdrop-blur-3xl rounded-[3rem] p-10 shadow-[0_30px_60px_rgba(0,0,0,0.02)] border border-white/60 flex flex-col h-[520px] group relative overflow-hidden"
           >
-            {/* Background Glow */}
             <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors duration-700" />
             
             <div className="flex items-center justify-between mb-10 relative z-10">
@@ -356,12 +349,10 @@ const Profile = () => {
             </div>
           </motion.div>
 
-          {/* Recent Activity (Timeline) */}
           <motion.div
             variants={itemVariants}
             className="bg-white/80 backdrop-blur-3xl rounded-[3rem] p-10 shadow-[0_30px_60px_rgba(0,0,0,0.02)] border border-white/60 h-[520px] flex flex-col relative overflow-hidden group"
           >
-            {/* Background Glow */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl group-hover:bg-purple-500/10 transition-colors duration-700" />
             
             <div className="flex items-center justify-between mb-10 relative z-10">
@@ -386,12 +377,10 @@ const Profile = () => {
                     transition={{ delay: i * 0.1 }}
                     className="flex gap-8 group/item relative pb-10 last:pb-0"
                   >
-                    {/* Line */}
                     {i !== activities.length - 1 && (
                       <div className="absolute top-14 left-7 w-[2px] h-full bg-gradient-to-b from-slate-200 via-slate-100 to-transparent" />
                     )}
 
-                    {/* Icon Container */}
                     <div className="relative z-20">
                       <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border-4 border-white shadow-xl transition-all duration-500 group-hover/item:rotate-12 group-hover/item:scale-110 ${
                         activity.type === 'post' 
@@ -402,7 +391,6 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 pt-2 space-y-3">
                       <div className="bg-slate-50/50 hover:bg-white border border-slate-100/50 hover:border-indigo-100 p-5 rounded-[2rem] transition-all duration-300 group-hover/item:shadow-lg group-hover/item:shadow-indigo-500/5 group-hover/item:-translate-y-1">
                         <p className="text-base font-bold text-slate-800 group-hover/item:text-indigo-600 transition-colors leading-tight mb-3">

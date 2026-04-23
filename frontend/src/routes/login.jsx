@@ -62,7 +62,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#F8FAFF] via-[#EEF2FF] to-[#F9FAFB] flex items-center justify-center px-4 relative overflow-hidden">
-
       <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_15%_20%,#C7D2FE_0,transparent_35%),radial-gradient(circle_at_80%_10%,#A5B4FC_0,transparent_28%),radial-gradient(circle_at_85%_85%,#C4B5FD_0,transparent_32%)]" />
       <div className="absolute w-105 h-105 bg-[#C7D2FE]/50 rounded-full blur-3xl -top-30 -left-30" />
       <div className="absolute w-85 h-85 bg-[#A5B4FC]/40 rounded-full blur-3xl -bottom-25 -right-25" />
@@ -74,7 +73,6 @@ const Login = () => {
         animate="show"
         className="relative w-full max-w-md bg-white/90 backdrop-blur-sm border border-[#E5E7EB] rounded-2xl shadow-lg p-8"
       >
-
         <div className="absolute top-0 left-0 w-full h-1 bg-[#4F46E5] rounded-t-2xl" />
 
         <_motion.div variants={item} className="mb-8 text-center">
@@ -90,8 +88,6 @@ const Login = () => {
         </_motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-
-
           <_motion.div variants={item}>
             <label className="text-sm font-medium text-[#374151] block mb-1">
               Username
