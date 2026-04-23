@@ -41,17 +41,75 @@ const GroupsPage = () => {
 
     const joinMutation = useMutation({
         mutationFn: joinGroup,
+        onMutate: async (groupId) => {
+            await queryClient.cancelQueries({ queryKey: ["groups"] });
+            const previousGroups = queryClient.getQueryData(["groups"]);
+
+            queryClient.setQueryData(["groups"], (old) => {
+                if (!old || !old.results) return old;
+                return {
+                    ...old,
+                    results: old.results.map((group) => {
+                        if (group.id === groupId) {
+                            return {
+                                ...group,
+                                members: [...(group.members || []), { username: user?.username }],
+                            };
+                        }
+                        return group;
+                    }),
+                };
+            });
+
+            return { previousGroups };
+        },
+        onError: (err, groupId, context) => {
+            queryClient.setQueryData(["groups"], context.previousGroups);
+            toast.error("Failed to join group");
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["groups"] });
+        },
         onSuccess: () => {
             toast.success("Joined group successfully");
-            queryClient.invalidateQueries(["groups"]);
         },
     });
 
     const leaveMutation = useMutation({
         mutationFn: leaveGroup,
+        onMutate: async (groupId) => {
+            await queryClient.cancelQueries({ queryKey: ["groups"] });
+            const previousGroups = queryClient.getQueryData(["groups"]);
+
+            queryClient.setQueryData(["groups"], (old) => {
+                if (!old || !old.results) return old;
+                return {
+                    ...old,
+                    results: old.results.map((group) => {
+                        if (group.id === groupId) {
+                            return {
+                                ...group,
+                                members: (group.members || []).filter(
+                                    (m) => (m?.username || "").toLowerCase().trim() !== currentUsername
+                                ),
+                            };
+                        }
+                        return group;
+                    }),
+                };
+            });
+
+            return { previousGroups };
+        },
+        onError: (err, groupId, context) => {
+            queryClient.setQueryData(["groups"], context.previousGroups);
+            toast.error("Failed to leave group");
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["groups"] });
+        },
         onSuccess: () => {
             toast.success("Left group");
-            queryClient.invalidateQueries(["groups"]);
         },
     });
 

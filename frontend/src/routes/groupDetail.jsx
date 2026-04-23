@@ -97,66 +97,192 @@ const GroupDetail = () => {
   // 🔥 MUTATIONS (Success/Error handling)
   const createMutation = useMutation({
     mutationFn: createPost,
+    onMutate: async (newPost) => {
+      await queryClient.cancelQueries({ queryKey: ["posts", groupId] });
+      const previousPosts = queryClient.getQueryData(["posts", groupId]);
+
+      queryClient.setQueryData(["posts", groupId], (old) => {
+        const results = old?.results || [];
+        return {
+          ...old,
+          results: [
+            {
+              ...newPost,
+              id: Date.now(),
+              author: user?.username,
+              created_at: new Date().toISOString(),
+              isOptimistic: true,
+            },
+            ...results,
+          ],
+        };
+      });
+
+      return { previousPosts };
+    },
+    onError: (err, newPost, context) => {
+      queryClient.setQueryData(["posts", groupId], context.previousPosts);
+      toast.error("Failed to create post");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts", groupId] });
+    },
     onSuccess: () => {
       toast.success("Post created");
-      queryClient.invalidateQueries(["posts", groupId]);
       setTitle("");
       setContent("");
       setShowPostComposer(false);
-    },
-    onError: (error) => {
-      const err = error.response?.data?.detail || error.response?.data?.group || "Post failed";
-      toast.error(err);
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deletePost,
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ["posts", groupId] });
+      const previousPosts = queryClient.getQueryData(["posts", groupId]);
+
+      queryClient.setQueryData(["posts", groupId], (old) => ({
+        ...old,
+        results: (old?.results || []).filter((p) => p.id !== postId),
+      }));
+
+      return { previousPosts };
+    },
+    onError: (err, postId, context) => {
+      queryClient.setQueryData(["posts", groupId], context.previousPosts);
+      toast.error("Error deleting post");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts", groupId] });
+    },
     onSuccess: () => {
       toast.success("Post deleted");
-      queryClient.invalidateQueries(["posts", groupId]);
       setSelectedPostId(null);
     },
-    onError: () => toast.error("Error deleting post"),
   });
 
   const updateMutation = useMutation({
     mutationFn: updatePost,
+    onMutate: async (updatedPost) => {
+      await queryClient.cancelQueries({ queryKey: ["posts", groupId] });
+      const previousPosts = queryClient.getQueryData(["posts", groupId]);
+
+      queryClient.setQueryData(["posts", groupId], (old) => ({
+        ...old,
+        results: (old?.results || []).map((p) =>
+          p.id === updatedPost.id ? { ...p, ...updatedPost.data } : p
+        ),
+      }));
+
+      return { previousPosts };
+    },
+    onError: (err, updatedPost, context) => {
+      queryClient.setQueryData(["posts", groupId], context.previousPosts);
+      toast.error("Error updating post");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts", groupId] });
+    },
     onSuccess: () => {
       toast.success("Post updated");
-      queryClient.invalidateQueries(["posts", groupId]);
     },
-    onError: () => toast.error("Error updating post"),
   });
 
   const createCommentMutation = useMutation({
     mutationFn: createComment,
+    onMutate: async (newComment) => {
+      await queryClient.cancelQueries({ queryKey: ["comments", selectedPostId] });
+      const previousComments = queryClient.getQueryData(["comments", selectedPostId]);
+
+      queryClient.setQueryData(["comments", selectedPostId], (old) => {
+        const results = Array.isArray(old) ? old : (old?.results || []);
+        const commentObj = {
+          id: Date.now(),
+          content: newComment.content,
+          author: user?.username,
+          created_at: new Date().toISOString(),
+          isOptimistic: true,
+        };
+        return Array.isArray(old) ? [commentObj, ...old] : { ...old, results: [commentObj, ...results] };
+      });
+
+      return { previousComments };
+    },
+    onError: (err, newComment, context) => {
+      queryClient.setQueryData(["comments", selectedPostId], context.previousComments);
+      toast.error("Comment failed");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", selectedPostId] });
+    },
     onSuccess: () => {
       toast.success("Comment added");
-      queryClient.invalidateQueries(["comments", selectedPostId]);
       setCommentText("");
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.detail || "Comment failed");
     },
   });
 
   const deleteCommentMutation = useMutation({
     mutationFn: deleteComment,
+    onMutate: async ({ commentId }) => {
+      await queryClient.cancelQueries({ queryKey: ["comments", selectedPostId] });
+      const previousComments = queryClient.getQueryData(["comments", selectedPostId]);
+
+      queryClient.setQueryData(["comments", selectedPostId], (old) => {
+        if (Array.isArray(old)) {
+          return old.filter((c) => c.id !== commentId);
+        }
+        return {
+          ...old,
+          results: (old?.results || []).filter((c) => c.id !== commentId),
+        };
+      });
+
+      return { previousComments };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(["comments", selectedPostId], context.previousComments);
+      toast.error("Error deleting comment");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", selectedPostId] });
+    },
     onSuccess: () => {
       toast.success("Comment deleted");
-      queryClient.invalidateQueries(["comments", selectedPostId]);
     },
-    onError: () => toast.error("Error deleting comment"),
   });
 
   const updateCommentMutation = useMutation({
     mutationFn: updateComment,
+    onMutate: async (updatedComment) => {
+      await queryClient.cancelQueries({ queryKey: ["comments", selectedPostId] });
+      const previousComments = queryClient.getQueryData(["comments", selectedPostId]);
+
+      queryClient.setQueryData(["comments", selectedPostId], (old) => {
+        if (Array.isArray(old)) {
+          return old.map((c) =>
+            c.id === updatedComment.commentId ? { ...c, content: updatedComment.content } : c
+          );
+        }
+        return {
+          ...old,
+          results: (old?.results || []).map((c) =>
+            c.id === updatedComment.commentId ? { ...c, content: updatedComment.content } : c
+          ),
+        };
+      });
+
+      return { previousComments };
+    },
+    onError: (err, updatedComment, context) => {
+      queryClient.setQueryData(["comments", selectedPostId], context.previousComments);
+      toast.error("Error updating comment");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", selectedPostId] });
+    },
     onSuccess: () => {
       toast.success("Comment updated");
-      queryClient.invalidateQueries(["comments", selectedPostId]);
     },
-    onError: () => toast.error("Error updating comment"),
   });
 
   const openCommentEditor = (comment) => {
@@ -279,66 +405,106 @@ const GroupDetail = () => {
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-4">
-              <_motion.button
-                whileHover={isMember ? { scale: 1.05, y: -2 } : {}}
-                whileTap={isMember ? { scale: 0.95 } : {}}
-                onClick={() => isMember && setShowPostComposer((prev) => !prev)}
-                className={`relative flex h-14 items-center gap-3 overflow-hidden rounded-2xl px-8 text-sm font-black transition-all ${
-                  !isMember
-                    ? "cursor-not-allowed bg-slate-100 text-slate-400"
-                    : showPostComposer
-                      ? "bg-slate-900 text-white shadow-xl"
-                      : "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700"
-                }`}
-              >
-                <svg className={`h-5 w-5 transition-transform duration-500 ${showPostComposer ? "rotate-45" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex shrink-0 items-center gap-4">
+            <_motion.button
+              whileHover={isMember ? { scale: 1.05, y: -2 } : {}}
+              whileTap={isMember ? { scale: 0.95 } : {}}
+              onClick={() => isMember && setShowPostComposer((prev) => !prev)}
+              className={`group relative flex h-14 items-center gap-3 overflow-hidden rounded-2xl px-8 text-sm font-black transition-all duration-500 ${
+                !isMember
+                  ? "bg-slate-100 text-slate-400 cursor-help"
+                  : showPostComposer
+                    ? "bg-slate-900 text-white shadow-xl shadow-slate-900/20"
+                    : "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700"
+              }`}
+            >
+              {!isMember && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-100 opacity-0 transition-opacity group-hover:opacity-100">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-4 text-center">
+                    Join community to post
+                  </span>
+                </div>
+              )}
+              <div className="relative z-10 flex items-center gap-3">
+                <svg 
+                  className={`h-5 w-5 transition-transform duration-500 ease-[0.16,1,0.3,1] ${showPostComposer ? "rotate-45" : ""}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                 </svg>
-                {showPostComposer ? "Close" : "Create Post"}
-              </_motion.button>
-            </div>
+                <span>{showPostComposer ? "Discard" : "Create Post"}</span>
+              </div>
+              
+              {/* Subtle Glow Effect */}
+              {isMember && !showPostComposer && (
+                <div className="absolute inset-0 z-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+              )}
+            </_motion.button>
+          </div>
           </div>
         </_motion.header>
 
         <div className="flex min-h-0 flex-1 gap-6">
           <section className="flex flex-1 flex-col gap-4 overflow-hidden">
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {showPostComposer && (
                 <_motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ 
+                    opacity: 1, 
+                    height: "auto",
+                    marginBottom: 24
+                  }}
+                  exit={{ 
+                    opacity: 0, 
+                    height: 0,
+                    marginBottom: 0
+                  }}
+                  transition={{ 
+                    duration: 0.5, 
+                    ease: [0.16, 1, 0.3, 1] 
+                  }}
                   className="overflow-hidden"
                 >
-                  <div className="space-y-4 rounded-2xl border-2 border-[#4F46E5]/20 bg-[#F9FAFB] p-5 shadow-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="h-2 w-2 rounded-full bg-[#4F46E5]" />
-                      <h3 className="text-sm font-bold text-[#4F46E5] uppercase tracking-wider">Draft New Post</h3>
+                  <div className="space-y-4 rounded-3xl border border-indigo-100 bg-white p-6 shadow-[0_15px_35px_rgba(79,70,229,0.05)]">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                      <h3 className="text-xs font-black text-indigo-500 uppercase tracking-[0.2em]">New Publication</h3>
                     </div>
                     <input
-                      placeholder="A descriptive title for your post"
+                      placeholder="Give your post a compelling title..."
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-medium text-[#111827] transition-all hover:border-[#4F46E5] focus:border-[#4F46E5] focus:outline-none focus:ring-4 focus:ring-[#EEF2FF]"
+                      className="w-full rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 text-sm font-bold text-slate-900 transition-all placeholder:text-slate-400 hover:bg-slate-50 focus:border-indigo-500/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/5"
                     />
                     <textarea
-                      placeholder="What would you like to share with the group?"
+                      placeholder="Share your thoughts or research with the community..."
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
-                      className="w-full min-h-32 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#374151] transition-all hover:border-[#4F46E5] focus:border-[#4F46E5] focus:outline-none focus:ring-4 focus:ring-[#EEF2FF]"
+                      className="w-full min-h-40 rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 text-sm font-medium text-slate-700 transition-all placeholder:text-slate-400 hover:bg-slate-50 focus:border-indigo-500/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/5"
                     />
-                    <div className="flex justify-end">
-                      <button
-                        disabled={createMutation.isPending}
+                    <div className="flex justify-end pt-2">
+                      <_motion.button
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => {
-                          if (!title || !content) return toast.error("Title and content required");
+                          if (!title.trim() || !content.trim()) return toast.error("Title and content required");
                           createMutation.mutate({ title, content, group: Number(groupId) });
                         }}
-                        className="rounded-xl bg-[#4F46E5] px-6 py-2.5 font-bold text-white transition-all hover:bg-[#4338CA] disabled:opacity-50"
+                        disabled={!title.trim() || !content.trim() || createMutation.isPending}
+                        className="flex h-12 items-center gap-2 rounded-2xl bg-indigo-600 px-8 text-xs font-black text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {createMutation.isPending ? "Posting..." : "Share Post"}
-                      </button>
+                        {createMutation.isPending ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        ) : (
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                        )}
+                        Publish Post
+                      </_motion.button>
                     </div>
                   </div>
                 </_motion.div>
