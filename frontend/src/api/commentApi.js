@@ -8,7 +8,7 @@ export const fetchComments = async (postId) => {
 export const createComment = async ({ postId, content }) => {
     const res = await axiosInstance.post(`/comments/${postId}/`, {
       content,
-      post: postId, 
+      post: postId,
     });
     return res.data;
   };

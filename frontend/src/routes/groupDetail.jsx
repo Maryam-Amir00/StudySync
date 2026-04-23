@@ -122,7 +122,8 @@ const GroupDetail = () => {
     },
     onError: (err, newPost, context) => {
       queryClient.setQueryData(["posts", groupId], context.previousPosts);
-      toast.error("Failed to create post");
+      const msg = err.response?.data?.detail || err.response?.data?.title || "Failed to create post";
+      toast.error(msg);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["posts", groupId] });
@@ -191,10 +192,11 @@ const GroupDetail = () => {
   const createCommentMutation = useMutation({
     mutationFn: createComment,
     onMutate: async (newComment) => {
-      await queryClient.cancelQueries({ queryKey: ["comments", selectedPostId] });
-      const previousComments = queryClient.getQueryData(["comments", selectedPostId]);
+      const { postId } = newComment;
+      await queryClient.cancelQueries({ queryKey: ["comments", postId] });
+      const previousComments = queryClient.getQueryData(["comments", postId]);
 
-      queryClient.setQueryData(["comments", selectedPostId], (old) => {
+      queryClient.setQueryData(["comments", postId], (old) => {
         const results = Array.isArray(old) ? old : (old?.results || []);
         const commentObj = {
           id: Date.now(),
@@ -203,17 +205,21 @@ const GroupDetail = () => {
           created_at: new Date().toISOString(),
           isOptimistic: true,
         };
-        return Array.isArray(old) ? [commentObj, ...old] : { ...old, results: [commentObj, ...results] };
+        return Array.isArray(old) 
+          ? [commentObj, ...old] 
+          : { ...old, results: [commentObj, ...results] };
       });
 
-      return { previousComments };
+      return { previousComments, postId };
     },
     onError: (err, newComment, context) => {
-      queryClient.setQueryData(["comments", selectedPostId], context.previousComments);
-      toast.error("Comment failed");
+      queryClient.setQueryData(["comments", context.postId], context.previousComments);
+      const msg = err.response?.data?.detail || err.response?.data?.content || "Comment failed";
+      toast.error(msg);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", selectedPostId] });
+    onSettled: (data, error, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["comments", variables.postId] });
+      queryClient.invalidateQueries({ queryKey: ["posts", groupId] });
     },
     onSuccess: () => {
       toast.success("Comment added");
@@ -223,11 +229,11 @@ const GroupDetail = () => {
 
   const deleteCommentMutation = useMutation({
     mutationFn: deleteComment,
-    onMutate: async ({ commentId }) => {
-      await queryClient.cancelQueries({ queryKey: ["comments", selectedPostId] });
-      const previousComments = queryClient.getQueryData(["comments", selectedPostId]);
+    onMutate: async ({ postId, commentId }) => {
+      await queryClient.cancelQueries({ queryKey: ["comments", postId] });
+      const previousComments = queryClient.getQueryData(["comments", postId]);
 
-      queryClient.setQueryData(["comments", selectedPostId], (old) => {
+      queryClient.setQueryData(["comments", postId], (old) => {
         if (Array.isArray(old)) {
           return old.filter((c) => c.id !== commentId);
         }
@@ -237,14 +243,15 @@ const GroupDetail = () => {
         };
       });
 
-      return { previousComments };
+      return { previousComments, postId };
     },
     onError: (err, variables, context) => {
-      queryClient.setQueryData(["comments", selectedPostId], context.previousComments);
+      queryClient.setQueryData(["comments", context.postId], context.previousComments);
       toast.error("Error deleting comment");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", selectedPostId] });
+    onSettled: (data, error, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["comments", variables.postId] });
+      queryClient.invalidateQueries({ queryKey: ["posts", groupId] });
     },
     onSuccess: () => {
       toast.success("Comment deleted");
@@ -254,31 +261,32 @@ const GroupDetail = () => {
   const updateCommentMutation = useMutation({
     mutationFn: updateComment,
     onMutate: async (updatedComment) => {
-      await queryClient.cancelQueries({ queryKey: ["comments", selectedPostId] });
-      const previousComments = queryClient.getQueryData(["comments", selectedPostId]);
+      const { postId, commentId } = updatedComment;
+      await queryClient.cancelQueries({ queryKey: ["comments", postId] });
+      const previousComments = queryClient.getQueryData(["comments", postId]);
 
-      queryClient.setQueryData(["comments", selectedPostId], (old) => {
+      queryClient.setQueryData(["comments", postId], (old) => {
         if (Array.isArray(old)) {
           return old.map((c) =>
-            c.id === updatedComment.commentId ? { ...c, content: updatedComment.content } : c
+            c.id === commentId ? { ...c, content: updatedComment.content } : c
           );
         }
         return {
           ...old,
           results: (old?.results || []).map((c) =>
-            c.id === updatedComment.commentId ? { ...c, content: updatedComment.content } : c
+            c.id === commentId ? { ...c, content: updatedComment.content } : c
           ),
         };
       });
 
-      return { previousComments };
+      return { previousComments, postId };
     },
     onError: (err, updatedComment, context) => {
-      queryClient.setQueryData(["comments", selectedPostId], context.previousComments);
+      queryClient.setQueryData(["comments", context.postId], context.previousComments);
       toast.error("Error updating comment");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", selectedPostId] });
+    onSettled: (data, error, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["comments", variables.postId] });
     },
     onSuccess: () => {
       toast.success("Comment updated");
@@ -804,17 +812,22 @@ const GroupDetail = () => {
                   </div>
 
                   <div className="border-t border-[#E5E7EB] bg-white px-6 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-2 rounded-2xl bg-[#F9FAFB] p-1.5 ring-1 ring-[#E5E7EB] transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-[#4F46E5]/30 focus-within:shadow-lg">
+                    <div className={`flex items-center gap-2 rounded-2xl p-1.5 ring-1 transition-all ${
+                      !isMember 
+                      ? 'bg-slate-50 ring-slate-200' 
+                      : 'bg-[#F9FAFB] ring-[#E5E7EB] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#4F46E5]/30 focus-within:shadow-lg'
+                    }`}>
                       <textarea
                         rows={1}
-                        placeholder={`Reply to ${selectedPost.author}...`}
+                        disabled={!isMember}
+                        placeholder={isMember ? `Reply to ${selectedPost.author}...` : "Join community to participate in discussion"}
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
-                        className="flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none"
+                        className="flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none disabled:cursor-not-allowed"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
-                            if (commentText.trim()) {
+                            if (commentText.trim() && isMember) {
                               createCommentMutation.mutate({ postId: selectedPost.id, content: commentText });
                             }
                           }
@@ -822,9 +835,9 @@ const GroupDetail = () => {
                       />
                       <div className="pb-1">
                         <button
-                          disabled={!commentText.trim() || createCommentMutation.isPending}
-                          onClick={() => createCommentMutation.mutate({ postId: selectedPost.id, content: commentText })}
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#4F46E5] text-white shadow-md transition-all hover:bg-[#4338CA] hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100"
+                          disabled={!commentText.trim() || createCommentMutation.isPending || !isMember}
+                          onClick={() => isMember && createCommentMutation.mutate({ postId: selectedPost.id, content: commentText })}
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#4F46E5] text-white shadow-md transition-all hover:bg-[#4338CA] hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100 disabled:bg-slate-400"
                         >
                           <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
