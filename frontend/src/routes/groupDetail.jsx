@@ -98,6 +98,9 @@ const GroupDetail = () => {
   const createMutation = useMutation({
     mutationFn: createPost,
     onMutate: async (newPost) => {
+      setTitle("");
+      setContent("");
+      setShowPostComposer(false);
       await queryClient.cancelQueries({ queryKey: ["posts", groupId] });
       const previousPosts = queryClient.getQueryData(["posts", groupId]);
 
@@ -130,9 +133,6 @@ const GroupDetail = () => {
     },
     onSuccess: () => {
       toast.success("Post created");
-      setTitle("");
-      setContent("");
-      setShowPostComposer(false);
     },
   });
 
@@ -165,6 +165,7 @@ const GroupDetail = () => {
   const updateMutation = useMutation({
     mutationFn: updatePost,
     onMutate: async (updatedPost) => {
+      setEditingPost(null);
       await queryClient.cancelQueries({ queryKey: ["posts", groupId] });
       const previousPosts = queryClient.getQueryData(["posts", groupId]);
 
@@ -193,6 +194,7 @@ const GroupDetail = () => {
     mutationFn: createComment,
     onMutate: async (newComment) => {
       const { postId } = newComment;
+      setCommentText("");
       await queryClient.cancelQueries({ queryKey: ["comments", postId] });
       const previousComments = queryClient.getQueryData(["comments", postId]);
 
@@ -223,7 +225,6 @@ const GroupDetail = () => {
     },
     onSuccess: () => {
       toast.success("Comment added");
-      setCommentText("");
     },
   });
 
@@ -261,6 +262,7 @@ const GroupDetail = () => {
   const updateCommentMutation = useMutation({
     mutationFn: updateComment,
     onMutate: async (updatedComment) => {
+      closeCommentEditor();
       const { postId, commentId } = updatedComment;
       await queryClient.cancelQueries({ queryKey: ["comments", postId] });
       const previousComments = queryClient.getQueryData(["comments", postId]);
@@ -312,8 +314,7 @@ const GroupDetail = () => {
     }
 
     updateCommentMutation.mutate(
-      { postId: selectedPost.id, commentId: editingComment.id, content: trimmedText },
-      { onSuccess: () => closeCommentEditor() }
+      { postId: selectedPost.id, commentId: editingComment.id, content: trimmedText }
     );
   };
 
@@ -957,8 +958,7 @@ const GroupDetail = () => {
                     onClick={() => {
                       if (editPostTitle.trim() && editPostContent.trim()) {
                         updateMutation.mutate(
-                          { id: editingPost.id, data: { title: editPostTitle.trim(), content: editPostContent.trim(), group: Number(groupId) } },
-                          { onSuccess: () => setEditingPost(null) }
+                          { id: editingPost.id, data: { title: editPostTitle.trim(), content: editPostContent.trim(), group: Number(groupId) } }
                         );
                       }
                     }}
